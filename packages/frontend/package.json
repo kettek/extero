@@ -13,6 +13,7 @@
     "@rollup/plugin-node-resolve": "^11.0.0",
     "@rollup/plugin-typescript": "^8.0.0",
     "@tsconfig/svelte": "^2.0.0",
+    "peerjs": "^1.3.2",
     "rollup": "^2.3.4",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.0",
@@ -28,7 +29,6 @@
     "dexie": "^3.2.0",
     "dexie-observable": "^3.0.0-beta.11",
     "eventemitter3": "^4.0.7",
-    "peerjs": "^1.3.2",
     "sirv-cli": "^1.0.0",
     "unique-names-generator": "^4.6.0",
     "uuid": "^8.3.2"
