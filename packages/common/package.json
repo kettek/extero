@@ -1,0 +1,21 @@
+{
+  "name": "@extero/common",
+  "version": "0.1.0",
+  "private": true,
+  "description": "",
+  "main": "dist/api.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPL-3.0",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.7.0",
+    "@typescript-eslint/parser": "^5.7.0",
+    "eslint": "^8.4.1",
+    "typescript": "^4.5.4"
+  }
+}
