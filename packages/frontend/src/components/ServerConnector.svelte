@@ -1,7 +1,10 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator'
+  import Peer, { DataConnection } from 'peerjs'
 
+  export let peerID: string
+  export let localPeer: Peer
   export let websocket: WebSocket
   export let ready: boolean
   let desiredRoom: string
@@ -14,6 +17,34 @@
   onMount(async () => {
     const parsedUrl = new URL(window.location.href)
     try {
+      await new Promise((resolve: (value: void) => void, reject: (reason: any) => void) => {
+        localPeer = new Peer({
+          host: window.location.hostname,
+          port: Number(window.location.port),
+          path: '/peer',
+        })
+
+        localPeer.on('open', (id: string) => {
+          console.log("peer open")
+          peerID = id
+          resolve()
+        })
+        localPeer.on('disconnected', () => {
+          console.log("peer disconnected")
+          // TODO: Reconnect?
+        })
+        localPeer.on('error', (err: any) => {
+          console.log('peer error')
+          console.error(err)
+          reject(err)
+        })
+        localPeer.on('connection', (dc: DataConnection) => {
+          console.log('we are connected to', dc)
+        })
+        localPeer.on('call', (mc: Peer.MediaConnection) => {
+          console.log('got call', mc)
+        })
+      })
       await new Promise((resolve: (value: void) => void, reject: (reason: any) => void) => {
         websocket = new WebSocket(`wss://${parsedUrl.hostname}:3001`)
         websocket.onerror = (event: Event) => {
@@ -29,7 +60,7 @@
           console.log('got open')
           websocket.send(JSON.stringify({
             type: 'hello',
-            peerID: 'TODO'+new Date,
+            peerID,
           }))
           resolve()
         }
@@ -41,8 +72,15 @@
               room = msg.room
               roomReady = true
             }
+            for (let m of msg.members) {
+              localPeer.connect(m)
+              // TODO: Move to separate Member connection manager, wherein we can reset the media stream if we change devices, etc.
+            }
+            // TODO: For each member, connect as a peer.
           } else if (msg.type === 'member-join') {
+            // TODO: Connect as a peer.
           } else if (msg.type === 'member-leave') {
+            // TODO: Remove as a peer.
           }
         }
       })
