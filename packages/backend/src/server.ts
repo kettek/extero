@@ -57,7 +57,7 @@ wss.on('connection', ws => {
 				type: 'join-room',
 				room: room.name,
 				success: true,
-				members: room.members.filter(v=>v.peerID !== member.peerID)
+				members: room.members.map(v=>v.peerID).filter(v=>v !== member.peerID)
 			}))
 			// Send member-join for existing rooms.
 			if (!isNewRoom) {
