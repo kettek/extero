@@ -1,0 +1,17 @@
+{
+  "name": "@extero/collectis",
+  "private": true,
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "workspaces": [
+    "packages/backend",
+    "packages/frontend"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Ketchetwahmeegwun T. Southall",
+  "license": "GPL-3.0"
+}
