@@ -1,11 +1,39 @@
 <script lang="ts">
 	import { v4 } from 'uuid'
 	import { onMount } from 'svelte'
+	import DeviceChooser from './components/DeviceChooser.svelte'
+import { Server } from 'ws'
+import ServerConnector from './components/ServerConnector.svelte'
 
 	let initErrors: Error[] = []
 
+	let websocket: WebSocket
+	let room: string = ''
+	let serverReady: boolean = false
+
+	let videoDevice: string = ''
+	let videoWidth: number = 1920
+	let videoHeight: number = 1080
+	let videoFramerate: number = 30
+	let videoFacing: 'user' | 'environment' = 'user'
+	let audioDevice: string = ''
+	let devicesReady: boolean = false
+
+	let roomReady: boolean = false
+
 	// Init sets up initial state.
 	async function init() {
+		try {
+			/*await navigator.mediaDevices.getUserMedia({
+				audio: true,
+				video: {
+					width: { min: 1024, ideal: 1280, max: 1920 },
+					height: { min: 576, ideal: 720, max: 1080 },
+				}
+			})*/
+		} catch(e: any) {
+			console.error(e)
+		}
 	}
 
 	// Restore sets up and restores and previous session data.
@@ -35,6 +63,20 @@
 	{:else}
 		<section>
 			<header>extero</header>
+			<article>
+				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room}></ServerConnector>
+				{#if serverReady}
+					{#if !devicesReady}
+						<DeviceChooser bind:videoDevice bind:videoWidth bind:videoHeight bind:videoFacing bind:videoFramerate bind:audioDevice bind:ready={devicesReady}></DeviceChooser>
+					{:else}
+						{#if !roomReady}
+							Waiting for room...
+						{:else}
+							Got room
+						{/if}
+					{/if}
+				{/if}
+			</article>
 		</section>
 	{/if}
 </main>
