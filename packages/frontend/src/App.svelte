@@ -64,7 +64,7 @@ import ServerConnector from './components/ServerConnector.svelte'
 		<section>
 			<header>extero</header>
 			<article>
-				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room}></ServerConnector>
+				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady}></ServerConnector>
 				{#if serverReady}
 					{#if !devicesReady}
 						<DeviceChooser bind:videoDevice bind:videoWidth bind:videoHeight bind:videoFacing bind:videoFramerate bind:audioDevice bind:ready={devicesReady}></DeviceChooser>
