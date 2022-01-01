@@ -2,6 +2,9 @@ export interface HelloMessage {
   type: 'hello'
   peerID: string
 }
+export function isHelloMessage(o: any): o is HelloMessage {
+  return o.type === 'hello'
+}
 
 export interface JoinRoomMessage {
   type: 'join-room'
