@@ -57,12 +57,17 @@ export default {
 		// https://github.com/rollup/plugins/tree/master/packages/commonjs
 		resolve({
 			browser: true,
-			dedupe: ['svelte']
+			dedupe: ['svelte'],
+			extensions: ['.js', '.ts', '.svelte'],
 		}),
 		commonjs(),
 		typescript({
 			sourceMap: !production,
-			inlineSources: !production
+			inlineSources: !production,
+			include: [
+				'src/**/*',
+				'../common/src/**/*',
+			]
 		}),
 
 		// In dev mode, call `npm run start` once
