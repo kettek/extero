@@ -16,6 +16,14 @@ export function isJoinRoomMessage(o: any): o is JoinRoomMessage {
   return o.type === 'join-room'
 }
 
+export interface LeaveRoomMessage {
+  type: 'leave-room'
+  room: string
+}
+export function isLeaveRoomMessage(o: any): o is LeaveRoomMessage {
+  return o.type === 'leave-room'
+}
+
 export interface MemberJoinMessage {
   type: 'member-join'
   room: string
