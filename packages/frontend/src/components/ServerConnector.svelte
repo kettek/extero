@@ -2,6 +2,7 @@
   import { onMount } from "svelte"
   import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator'
   import Peer, { DataConnection } from 'peerjs'
+  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage } from '@extero/common/src/api'
 
   export let peerID: string
   export let localPeer: Peer
@@ -67,7 +68,8 @@
         websocket.onmessage = (event: MessageEvent) => {
           let msg = JSON.parse(event.data)
           console.log('got', msg)
-          if (msg.type === 'join-room') {
+          if (isHelloMessage(msg)) {
+          } else if (isJoinRoomMessage(msg)) {
             if (msg.success) {
               room = msg.room
               roomReady = true
@@ -77,9 +79,9 @@
               // TODO: Move to separate Member connection manager, wherein we can reset the media stream if we change devices, etc.
             }
             // TODO: For each member, connect as a peer.
-          } else if (msg.type === 'member-join') {
+          } else if (isMemberJoinMessage(msg)) {
             // TODO: Connect as a peer.
-          } else if (msg.type === 'member-leave') {
+          } else if (isMemberLeftMessage(msg)) {
             // TODO: Remove as a peer.
           }
         }
