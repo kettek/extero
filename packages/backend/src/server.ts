@@ -4,7 +4,7 @@ import { ExpressPeerServer } from 'peer'
 import https from 'https'
 import fs from 'fs'
 import { createRoom } from './Room'
-import { isHelloMessage, isLeaveRoomMessage, isJoinRoomMessage } from '@extero/common/src/api'
+import { isHelloMessage, isLeaveRoomMessage, isJoinRoomMessage, mkMemberJoinMessage, mkJoinRoomMessage, mkMemberLeftMessage, mkHelloMessage } from '@extero/common/src/api'
 
 const app = express()
 const port = 3000
@@ -39,20 +39,15 @@ function memberJoinRoom(member: any, roomName: string) {
 	room.members.push(member)
 	member.room = room.name
 	// Send join-room response with members, excluding the peer itself.
-	member.ws.send(JSON.stringify({
-		type: 'join-room',
-		room: room.name,
-		success: true,
-		members: room.members.map(v=>v.peerID).filter(v=>v !== member.peerID)
-	}))
+	member.ws.send(JSON.stringify(
+		mkJoinRoomMessage(room.name, room.members.map(v=>v.peerID).filter(v=>v !== member.peerID), true)
+	))
 	// Send member-join for existing rooms.
 	if (!isNewRoom) {
 		for (let m of room.members.filter(v=>v.peerID!==member.peerID)) {
-			m.ws.send(JSON.stringify({
-				type: 'member-join',
-				room: room.name,
-				peerID: member.peerID
-			}))
+			m.ws.send(JSON.stringify(
+				mkMemberJoinMessage(room.name, member.peerID)
+			))
 		}
 	}
 }
@@ -69,11 +64,9 @@ function memberLeaveRoom(member: any, room: string) {
 	} else {
 		// Otherwise let existing members know member left.
 		for (let m of rooms[roomIndex].members) {
-			m.ws.send(JSON.stringify({
-				type: 'member-left',
-				room: rooms[roomIndex].name,
-				peerID: member.peerID,
-			}))
+			m.ws.send(JSON.stringify(
+				mkMemberLeftMessage(rooms[roomIndex].name, member.peerID)
+			))
 		}
 	}
 }
@@ -90,6 +83,12 @@ wss.on('connection', ws => {
 		let msg = JSON.parse(data.toString())
 		console.log('got', msg)
 		if (isHelloMessage(msg)) {
+			if (!msg.peerID) {
+				// TODO: Bad command to send hello without a peerID
+				ws.close()
+				return
+			}
+			// Only accept the peerID _once_
 			if (!member.peerID) {
 				member.peerID = msg.peerID
 			}
@@ -103,9 +102,9 @@ wss.on('connection', ws => {
 		memberLeaveRoom(member, member.room)
 	})
 
-	ws.send(JSON.stringify({
-		type: 'hello'
-	}))
+	ws.send(JSON.stringify(
+		mkHelloMessage()
+	))
 })
 
 app.use('/', express.static('../frontend/public'))
