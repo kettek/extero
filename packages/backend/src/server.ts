@@ -4,6 +4,7 @@ import { ExpressPeerServer } from 'peer'
 import https from 'https'
 import fs from 'fs'
 import { createRoom } from './Room'
+import { isHelloMessage, isLeaveRoomMessage, isJoinRoomMessage } from '@extero/common/src/api'
 
 const app = express()
 const port = 3000
@@ -25,6 +26,58 @@ let roomServer = https.createServer(httpsOptions, (req, res) => {
 	return console.log(`ws listening on ${wsPort}`)
 })
 
+function memberJoinRoom(member: any, roomName: string) {
+	// TODO: Allow password locking.
+	let room = rooms.find(v=>v.name === roomName)
+	let isNewRoom = false
+	if (!room) {
+		// Create room
+		rooms.push(createRoom(roomName))
+		room = rooms[rooms.length-1]
+		isNewRoom = true
+	}
+	room.members.push(member)
+	member.room = room.name
+	// Send join-room response with members, excluding the peer itself.
+	member.ws.send(JSON.stringify({
+		type: 'join-room',
+		room: room.name,
+		success: true,
+		members: room.members.map(v=>v.peerID).filter(v=>v !== member.peerID)
+	}))
+	// Send member-join for existing rooms.
+	if (!isNewRoom) {
+		for (let m of room.members.filter(v=>v.peerID!==member.peerID)) {
+			m.ws.send(JSON.stringify({
+				type: 'member-join',
+				room: room.name,
+				peerID: member.peerID
+			}))
+		}
+	}
+}
+
+function memberLeaveRoom(member: any, room: string) {
+	let roomIndex = rooms.findIndex(v=>v.name === room)
+	if (roomIndex === -1) return
+	let memberIndex = rooms[roomIndex].members.findIndex(v=>v.peerID === member.peerID)
+	if (memberIndex === -1) return
+	rooms[roomIndex].members.splice(memberIndex, 1)
+	// Delete if it is empty
+	if (rooms[roomIndex].members.length === 0) {
+		rooms.splice(roomIndex, 1)
+	} else {
+		// Otherwise let existing members know member left.
+		for (let m of rooms[roomIndex].members) {
+			m.ws.send(JSON.stringify({
+				type: 'member-left',
+				room: rooms[roomIndex].name,
+				peerID: member.peerID,
+			}))
+		}
+	}
+}
+
 const wss = new WebSocket.Server({ server: roomServer })
 
 wss.on('connection', ws => {
@@ -36,59 +89,18 @@ wss.on('connection', ws => {
 	ws.on('message', (data: WebSocket.Data) => {
 		let msg = JSON.parse(data.toString())
 		console.log('got', msg)
-		if (msg.type === 'hello') {
+		if (isHelloMessage(msg)) {
 			if (!member.peerID) {
 				member.peerID = msg.peerID
 			}
-		} else if (msg.type === 'join-room') {
-			// TODO: Allow password locking.
-			let room = rooms.find(v=>v.name===msg.room)
-			let isNewRoom = false
-			if (!room) {
-				// Create room
-				rooms.push(createRoom(msg.room))
-				room = rooms[rooms.length-1]
-				isNewRoom = true
-			}
-			room.members.push(member)
-			member.room = room.name
-			// Send join-room response with members, excluding the peer itself.
-			ws.send(JSON.stringify({
-				type: 'join-room',
-				room: room.name,
-				success: true,
-				members: room.members.map(v=>v.peerID).filter(v=>v !== member.peerID)
-			}))
-			// Send member-join for existing rooms.
-			if (!isNewRoom) {
-				for (let m of room.members.filter(v=>v.peerID!==member.peerID)) {
-					m.ws.send(JSON.stringify({
-						type: 'member-join',
-						room: room.name,
-						peerID: member.peerID
-					}))
-				}
-			}
+		} else if (isJoinRoomMessage(msg)) {
+			memberJoinRoom(member, msg.room)
+		} else if (isLeaveRoomMessage(msg)) {
+			memberLeaveRoom(member, msg.room)
 		}
 	})
 	ws.on('close', () => {
-		let roomIndex = rooms.findIndex(v=>v.name === member.room)
-		if (roomIndex >= 0) {
-			rooms[roomIndex].members = rooms[roomIndex].members.filter(v=>v.peerID !== member.peerID)
-			// Delete if it is empty
-			if (rooms[roomIndex].members.length === 0) {
-				rooms.splice(roomIndex, 1)
-			} else {
-				// Otherwise let existing members know member left.
-				for (let m of rooms[roomIndex].members) {
-					m.ws.send(JSON.stringify({
-						type: 'member-left',
-						room: rooms[roomIndex].name,
-						peerID: member.peerID,
-					}))
-				}
-			}
-		}
+		memberLeaveRoom(member, member.room)
 	})
 
 	ws.send(JSON.stringify({
