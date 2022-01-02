@@ -21,7 +21,7 @@ export interface JoinRoomMessage {
 export function isJoinRoomMessage(o: any): o is JoinRoomMessage {
   return o.type === 'join-room'
 }
-export function mkJoinRoomMessage(room: string, members: string[], success: boolean): JoinRoomMessage {
+export function mkJoinRoomMessage(room: string, members?: string[], success?: boolean): JoinRoomMessage {
   return {
     type: 'join-room',
     room,
