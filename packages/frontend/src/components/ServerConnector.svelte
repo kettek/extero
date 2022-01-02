@@ -2,7 +2,7 @@
   import { onMount } from "svelte"
   import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator'
   import Peer, { DataConnection } from 'peerjs'
-  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage } from '@extero/common/src/api'
+  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, mkHelloMessage, mkJoinRoomMessage } from '@extero/common/src/api'
 
   export let peerID: string
   export let localPeer: Peer
@@ -13,7 +13,7 @@
   export let roomReady: boolean
   let error: boolean
 
-  $: desiredRoom ? websocket?.send(JSON.stringify({type: 'join-room', room: desiredRoom })) : null
+  $: desiredRoom ? websocket?.send(JSON.stringify(mkJoinRoomMessage(desiredRoom))) : null
 
   onMount(async () => {
     const parsedUrl = new URL(window.location.href)
@@ -59,10 +59,9 @@
         }
         websocket.onopen = (event: Event) => {
           console.log('got open')
-          websocket.send(JSON.stringify({
-            type: 'hello',
-            peerID,
-          }))
+          websocket.send(JSON.stringify(
+            mkHelloMessage(peerID)
+          ))
           resolve()
         }
         websocket.onmessage = (event: MessageEvent) => {
