@@ -7,7 +7,9 @@
 	import NameChooser from './components/NameChooser.svelte'
 	import RoomChooser from './components/RoomChooser.svelte'
 	import type { Media } from './media'
-import MediaChooser from './components/MediaChooser.svelte'
+	import MediaChooser from './components/MediaChooser.svelte'
+	import type { Comrade } from './comrade'
+	import Room from './components/Room.svelte'
 
 	let initErrors: Error[] = []
 
@@ -29,6 +31,7 @@ import MediaChooser from './components/MediaChooser.svelte'
 	let videoFacing: 'user' | 'environment' = 'user'
 	let audioDevice: string = ''
 	let devicesReady: boolean = false
+	let comrades: Comrade[]
 
 	let roomReady: boolean = false
 
@@ -75,7 +78,7 @@ import MediaChooser from './components/MediaChooser.svelte'
 		<section>
 			<header>extero</header>
 			<article>
-				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username bind:medias></ServerConnector>
+				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username bind:medias bind:comrades></ServerConnector>
 				{#if serverReady}
 					{#if !nameReady}
 						<NameChooser bind:username bind:nameReady></NameChooser>
@@ -84,11 +87,7 @@ import MediaChooser from './components/MediaChooser.svelte'
 					{:else if !roomReady}
 						<RoomChooser bind:room bind:roomReady></RoomChooser>
 					{:else}
-						{#if !roomReady}
-							Waiting for room...
-						{:else}
-							Got room
-						{/if}
+						<Room room={room} bind:username comrades={comrades}></Room>
 					{/if}
 				{/if}
 			</article>

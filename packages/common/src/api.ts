@@ -86,6 +86,12 @@ export interface PeerMediaRequest {
 export function isPeerMediaRequest(o: any): o is PeerMediaRequest {
   return o.type === 'media-request'
 }
+export function mkPeerMediaRequest(uuid: string): PeerMediaRequest {
+  return {
+    type: 'media-request',
+    uuid,
+  }
+}
 
 export interface PeerMediaAdvertise {
   type: 'media-advertise'

@@ -1,8 +1,8 @@
 <script type='ts'>
   import { onMount } from "svelte"
-  import Peer, { DataConnection } from 'peerjs'
-  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerMediaAdvertise, mkPeerNameMessage } from '@extero/common/src/api'
-  import type { Comrade } from "../comrade"
+  import Peer, { DataConnection, MediaConnection } from 'peerjs'
+  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage } from '@extero/common/src/api'
+  import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
 
   export let username: string
@@ -12,11 +12,16 @@
   export let comrades: Comrade[] = []
   export let medias: Media[] = []
 
+  function refreshComrades() {
+    comrades = [...comrades]
+  }
+
   function addComrade(p: Peer.DataConnection) {
-    let comrade = {
+    let comrade: Comrade = {
       name: 'pending comrade',
       peerID: p.peer,
-      mediaConnections: [],
+      outboundMedias: [],
+      inboundMedias: [],
       dataConnection: p,
     }
     comrades.push(comrade)
@@ -40,24 +45,84 @@
         console.log('chat from', comrade.name, ':', data.content)
       } else if (isPeerMediaAdvertise(data)) {
         console.log('got media advertise', data)
-        // TODO: Gauge how much media we want to consume. For now accept primary/camera and/or secondary/desktop/window only.
+        // TODO: Gauge how much media we want to consume. For now accept all.
+        p.send(mkPeerMediaRequest(data.uuid))
       } else if (isPeerMediaRequest(data)) {
-        console.log('got media request', data)
+        // find it, yo.
+        let media = medias.find(v=>v.uuid===data.uuid)
+        if (!media) {
+          throw new Error(`media request for ${data.uuid} is bogus`)
+        }
+        let call = localPeer.call(p.peer, media.stream, {
+          metadata: {
+            uuid: media.uuid,
+            mediaType: media.mediaType,
+          }
+        })
+
+        let outboundMediaReference = {
+          uuid: media.uuid,
+          mediaType: media.mediaType,
+          mediaConnection: call,
+          stream: undefined,
+        }
+        comrade.outboundMedias.push(outboundMediaReference)
+
+        call.on('stream', (stream: MediaStream) => {
+          console.log('got foreign stream!!!', stream)
+          outboundMediaReference.stream = stream
+          refreshComrades()
+        })
+        call.on('error', (err: any) => {
+          console.log('call error', err)
+          comrade.outboundMedias = comrade.outboundMedias.filter(v=>v.uuid===data.uuid)
+          refreshComrades()
+        })
+        call.on('close', () => {
+          comrade.outboundMedias = comrade.outboundMedias.filter(v=>v.uuid===data.uuid)
+          refreshComrades()
+        })
       }
       console.log('got peer data', data)
+      refreshComrades()
     })
     console.log('added comrade', comrade)
+    refreshComrades()
   }
   function removeComrade(id: string) {
     let i = comrades.findIndex(v=>v.peerID === id)
     if (i === -1) return
     console.log('removed comrade', comrades[i])
-    for (let mediaChannel of comrades[i].mediaConnections) {
-      mediaChannel.close()
+    for (let media of comrades[i].outboundMedias) {
+      media.mediaConnection.close()
+    }
+    for (let media of comrades[i].inboundMedias) {
+      media.mediaConnection.close()
     }
     comrades[i].dataConnection.close()
     comrades.splice(i, 1)
+    refreshComrades()
   }
+  function addComradeMedia(comrade: Comrade, mc: Peer.MediaConnection) {
+    let {uuid, mediaType} = mc.metadata
+    if (!uuid || !mediaType) {
+      throw new Error(`comrade didn't provide the secret codes`)
+    }
+    let media: MediaReference = {
+      uuid,
+      mediaType,
+      mediaConnection: mc,
+      stream: undefined,
+    }
+    comrade.inboundMedias.push(media)
+    mc.on('stream', (stream: MediaStream) => {
+      media.stream = stream
+      console.log('got stream!!!', stream)
+      refreshComrades()
+    })
+    refreshComrades()
+  }
+
   export let websocket: WebSocket
   export let ready: boolean
   let desiredRoom: string
@@ -101,7 +166,13 @@
           addComrade(dc)
         })
         localPeer.on('call', (mc: Peer.MediaConnection) => {
-          console.log('got call', mc)
+          let comrade = comrades.find(v=>v.peerID === mc.peer)
+          if (!comrade) {
+            throw new Error(`bogus call from unknown comrade`)
+          }
+          // TODO: uh... okay, sure.
+          mc.answer()
+          addComradeMedia(comrade, mc)
         })
       })
       await new Promise((resolve: (value: void) => void, reject: (reason: any) => void) => {
