@@ -4,7 +4,8 @@
 	import DeviceChooser from './components/DeviceChooser.svelte'
 	import { Server } from 'ws'
 	import ServerConnector from './components/ServerConnector.svelte'
-  import { uniqueNamesGenerator, colors, starWars } from 'unique-names-generator'
+import NameChooser from './components/NameChooser.svelte'
+import RoomChooser from './components/RoomChooser.svelte';
 
 	let initErrors: Error[] = []
 
@@ -13,11 +14,8 @@
 	let serverReady: boolean = false
 
 	// TODO: Restore username from local storage.
-	let username: string = uniqueNamesGenerator({
-    dictionaries: [colors, starWars],
-    separator: ' ',
-    style: 'capital',
-  })
+	let username: string
+	let nameReady: boolean = false
 
 	let videoDevice: string = ''
 	let videoWidth: number = 1920
@@ -74,8 +72,12 @@
 			<article>
 				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username></ServerConnector>
 				{#if serverReady}
-					{#if !devicesReady}
+					{#if !nameReady}
+						<NameChooser bind:username bind:nameReady></NameChooser>
+					{:else if !devicesReady}
 						<DeviceChooser bind:videoDevice bind:videoWidth bind:videoHeight bind:videoFacing bind:videoFramerate bind:audioDevice bind:ready={devicesReady}></DeviceChooser>
+					{:else if !roomReady}
+						<RoomChooser bind:room bind:roomReady></RoomChooser>
 					{:else}
 						{#if !roomReady}
 							Waiting for room...

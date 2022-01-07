@@ -1,6 +1,5 @@
 <script type='ts'>
   import { onMount } from "svelte"
-  import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator'
   import Peer, { DataConnection } from 'peerjs'
   import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerNameMessage, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerNameMessage } from '@extero/common/src/api'
   import type { Comrade } from "../comrade"
@@ -55,7 +54,13 @@
   export let roomReady: boolean
   let error: boolean
 
-  $: desiredRoom ? websocket?.send(JSON.stringify(mkJoinRoomMessage(desiredRoom))) : null
+  $: {
+    if (roomReady && room) {
+      websocket?.send(JSON.stringify(
+        mkJoinRoomMessage(desiredRoom)
+      ))
+    }
+  }
 
   onMount(async () => {
     const parsedUrl = new URL(window.location.href)
@@ -125,19 +130,7 @@
           }
         }
       })
-      desiredRoom = parsedUrl?.search.substring(1)
-      if (!desiredRoom) {
-        let name = uniqueNamesGenerator({
-          dictionaries: [adjectives, colors, animals],
-          separator: '',
-          style: 'capital',
-        })
 
-        let newRelativePathQuery = window.location.pathname + '?' + name
-        history.pushState(null, '', newRelativePathQuery);
-        desiredRoom = name
-        // FIXME: Add room name negotiation.
-      }
       ready = true
       console.log('connected')
     } catch(e: any) {
