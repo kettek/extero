@@ -133,6 +133,7 @@
 		background: #111;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr);
 		padding: .5em;
 		max-width: 70ch;
 	}

@@ -2,6 +2,7 @@
   import { ChatHistory, mkPeerChatMessage } from "@extero/common/src/api"
 
   import type { Comrade } from "../comrade"
+import SplitPane from "./SplitPane.svelte"
 
 
   export let room: string
@@ -47,51 +48,53 @@
 </script>
 
 <main>
-  <section class='feed'>
-    {#each comrades.filter(v=>v.inboundMedias.length>0) as comrade}
-      <section class='comrade-feed'>
-        <div class='comrade-feed-name'>
-          {comrade.name}
-        </div>
-        {#each comrade.inboundMedias as inbound}
-          {#if inbound.stream}
-            <video use:srcObject={inbound.stream} autoplay playsinline>
-              <track kind='captions'>
-            </video>
-          {/if}
+  <SplitPane pos={80} type='horizontal'>
+    <section slot='a' class='feed'>
+      {#each comrades.filter(v=>v.inboundMedias.length>0) as comrade}
+        <section class='comrade-feed'>
+          <div class='comrade-feed-name'>
+            {comrade.name}
+          </div>
+          {#each comrade.inboundMedias as inbound}
+            {#if inbound.stream}
+              <video use:srcObject={inbound.stream} autoplay playsinline>
+                <track kind='captions'>
+              </video>
+            {/if}
+          {/each}
+        </section>
+      {/each}
+    </section>
+    <section slot='b' class='soapbox'>
+      <section class='comrades'>
+        <div class='comrade-name self'>{username}</div>
+        {#each comrades as comrade}
+          <div class='comrade-name'>
+            {comrade.name}
+          </div>
         {/each}
       </section>
-    {/each}
-  </section>
-  <section class='soapbox'>
-    <section class='comrades'>
-      <div class='comrade-name self'>{username}</div>
-      {#each comrades as comrade}
-        <div class='comrade-name'>
-          {comrade.name}
-        </div>
-      {/each}
-    </section>
-    <section class='chat'>
-      {#each chatHistory as chat}
-        <div class='chat-message'>
-          <div class='chat-message-from'>
-            {chat.from}
-            <span class='chat-message-date'>
-              {chat.timestamp.toLocaleString()}
-            </span>
+      <section class='chat'>
+        {#each chatHistory as chat}
+          <div class='chat-message'>
+            <div class='chat-message-from'>
+              {chat.from}
+              <span class='chat-message-date'>
+                {chat.timestamp.toLocaleString()}
+              </span>
+            </div>
+            <div class='chat-message-content'>
+              {chat.content}
+            </div>
           </div>
-          <div class='chat-message-content'>
-            {chat.content}
-          </div>
-        </div>
-      {/each}
+        {/each}
+      </section>
+      <section class='chat-input'>
+        <input type='text' bind:value={pendingChatInput} on:keyup={onChatInputKeyUp}>
+        <button on:click={sendChat}>Send</button>
+      </section>
     </section>
-    <section class='chat-input'>
-      <input type='text' bind:value={pendingChatInput} on:keyup={onChatInputKeyUp}>
-      <button on:click={sendChat}>Send</button>
-    </section>
-  </section>
+  </SplitPane>
 </main>
 
 <style>
@@ -99,7 +102,8 @@
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
   }
   .feed {
     display: grid;
@@ -140,6 +144,7 @@
   }
   .chat-message-content {
     margin-left: 1em;
+    word-break: break-word;
   }
   .comrade-name.self {
     font-weight: bold;
