@@ -17,6 +17,9 @@
       console.error('lost connection to', p)
       removePeer(p.peer)
     })
+    p.on('data', (data: any) => {
+      console.log('got peer data', data)
+    })
     console.log('added peer', peers[peers.length-1])
   }
   function removePeer(id: string) {
@@ -103,7 +106,10 @@
             }*/
             // TODO: For each member, connect as a peer.
           } else if (isMemberJoinMessage(msg)) {
-            addPeer(localPeer.connect(msg.peerID))
+            addPeer(localPeer.connect(msg.peerID, {
+              serialization: 'json',
+              reliable: true,
+            }))
           } else if (isMemberLeftMessage(msg)) {
             removePeer(msg.peerID)
           }
