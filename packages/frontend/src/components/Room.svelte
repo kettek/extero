@@ -69,7 +69,7 @@ import SplitPane from "./SplitPane.svelte"
     <section slot='a' class='feed'>
       {#each comrades.filter(v=>v.inboundMedias.length>0) as comrade}
         <section class='comrade-feed'>
-          <div class='comrade-feed-name'>
+          <div style="color: {getNameColor(comrade.name)}" class='comrade-feed-name'>
             {comrade.name}
           </div>
           {#each comrade.inboundMedias as inbound}
@@ -150,14 +150,20 @@ import SplitPane from "./SplitPane.svelte"
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
+    padding: 0 1em;
+    margin-bottom: .25em;
   }
   .chat-message-from {
     font-weight: bold;
   }
   .chat-message-date {
-    opacity: 0.75;
+    color: rgb(200, 200, 200);
+    opacity: 0.25;
     font-size: 75%;
     margin-left: 1em;
+  }
+  .chat-message-date:hover {
+    opacity: 0.5;
   }
   .chat-message-content {
     margin-left: 1em;
@@ -165,6 +171,8 @@ import SplitPane from "./SplitPane.svelte"
   }
   .comrades {
     padding: 1em;
+    background: rgba(32, 32, 32, 0.5);
+    margin: 0 1em 1em 1em;
   }
   .comrade-name.self {
     font-weight: bold;
