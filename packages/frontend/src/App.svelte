@@ -4,8 +4,10 @@
 	import DeviceChooser from './components/DeviceChooser.svelte'
 	import { Server } from 'ws'
 	import ServerConnector from './components/ServerConnector.svelte'
-import NameChooser from './components/NameChooser.svelte'
-import RoomChooser from './components/RoomChooser.svelte';
+	import NameChooser from './components/NameChooser.svelte'
+	import RoomChooser from './components/RoomChooser.svelte'
+	import type { Media } from './media'
+import MediaChooser from './components/MediaChooser.svelte'
 
 	let initErrors: Error[] = []
 
@@ -16,6 +18,9 @@ import RoomChooser from './components/RoomChooser.svelte';
 	// TODO: Restore username from local storage.
 	let username: string
 	let nameReady: boolean = false
+
+	let medias: Media[] = []
+	let mediaReady: boolean = false
 
 	let videoDevice: string = ''
 	let videoWidth: number = 1920
@@ -74,8 +79,8 @@ import RoomChooser from './components/RoomChooser.svelte';
 				{#if serverReady}
 					{#if !nameReady}
 						<NameChooser bind:username bind:nameReady></NameChooser>
-					{:else if !devicesReady}
-						<DeviceChooser bind:videoDevice bind:videoWidth bind:videoHeight bind:videoFacing bind:videoFramerate bind:audioDevice bind:ready={devicesReady}></DeviceChooser>
+					{:else if !mediaReady}
+						<MediaChooser bind:ready={mediaReady} bind:medias></MediaChooser>
 					{:else if !roomReady}
 						<RoomChooser bind:room bind:roomReady></RoomChooser>
 					{:else}
