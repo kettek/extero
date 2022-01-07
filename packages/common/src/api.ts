@@ -76,7 +76,7 @@ export function mkMemberLeftMessage(room: string, peerID: string): MemberLeftMes
   }
 }
 
-export type MediaType = 'primary' | 'secondary' | 'camera' | 'desktop' | 'window'
+export type MediaType = 'unknown' | 'camera' | 'capture'
 
 /* Peer Messages */
 export interface PeerMediaRequest {
