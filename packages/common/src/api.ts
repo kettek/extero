@@ -75,3 +75,28 @@ export function mkMemberLeftMessage(room: string, peerID: string): MemberLeftMes
     peerID,
   }
 }
+
+/* Peer Messages */
+export interface PeerMediaRequest {
+  type: 'media-request'
+  mediaType: 'primary' | 'secondary' | 'camera' | 'desktop' | 'window'
+}
+export function isPeerMediaRequest(o: any): o is PeerMediaRequest {
+  return o.type === 'media-request'
+}
+
+export interface PeerChatMessage {
+  type: 'chat'
+  content: string // Optionally HTML formatted text.
+}
+export function isPeerChatMessage(o: any): o is PeerChatMessage {
+  return o.type === 'chat'
+}
+
+export interface PeerNameMessage {
+  type: 'name'
+  name: string
+}
+export function isPeerNameMessage(o: any): o is PeerNameMessage {
+  return o.type === 'name'
+}
