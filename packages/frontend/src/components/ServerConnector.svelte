@@ -1,14 +1,16 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import Peer, { DataConnection } from 'peerjs'
-  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerNameMessage, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerNameMessage } from '@extero/common/src/api'
+  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerMediaAdvertise, mkPeerNameMessage } from '@extero/common/src/api'
   import type { Comrade } from "../comrade"
+  import type { Media } from "../media"
 
   export let username: string
 
   export let peerID: string
   export let localPeer: Peer
   export let comrades: Comrade[] = []
+  export let media: Media[] = []
   function addComrade(p: Peer.DataConnection) {
     let comrade = {
       name: 'pending comrade',
@@ -19,8 +21,11 @@
     comrades.push(comrade)
     p.on('open', () => {
       console.log('opened peer conn', p)
-      // TODO: Add/request media channels!
       p.send(mkPeerNameMessage(username))
+      // Advertise our current media sources.
+      for (let m of media) {
+        p.send(mkPeerMediaAdvertise(m.mediaType, m.uuid))
+      }
     })
     p.on('error', () => {
       console.error('lost connection to', p)
@@ -32,6 +37,11 @@
         comrade.name = data.name
       } else if (isPeerChatMessage(data)) {
         console.log('chat from', comrade.name, ':', data.content)
+      } else if (isPeerMediaAdvertise(data)) {
+        console.log('got media advertise', data)
+        // TODO: Gauge how much media we want to consume. For now accept primary/camera and/or secondary/desktop/window only.
+      } else if (isPeerMediaRequest(data)) {
+        console.log('got media request', data)
       }
       console.log('got peer data', data)
     })

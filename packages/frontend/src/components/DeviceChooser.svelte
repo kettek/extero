@@ -19,7 +19,6 @@
     await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: true,
-      
     })
     devices = await navigator.mediaDevices.enumerateDevices()
   })

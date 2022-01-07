@@ -76,13 +76,31 @@ export function mkMemberLeftMessage(room: string, peerID: string): MemberLeftMes
   }
 }
 
+export type MediaType = 'primary' | 'secondary' | 'camera' | 'desktop' | 'window'
+
 /* Peer Messages */
 export interface PeerMediaRequest {
   type: 'media-request'
-  mediaType: 'primary' | 'secondary' | 'camera' | 'desktop' | 'window'
+  uuid: string
 }
 export function isPeerMediaRequest(o: any): o is PeerMediaRequest {
   return o.type === 'media-request'
+}
+
+export interface PeerMediaAdvertise {
+  type: 'media-advertise'
+  mediaType: MediaType
+  uuid: string
+}
+export function isPeerMediaAdvertise(o: any): o is PeerMediaAdvertise {
+  return o.type === 'media-advertise'
+}
+export function mkPeerMediaAdvertise(mediaType: MediaType, uuid: string): PeerMediaAdvertise {
+  return {
+    type: 'media-advertise',
+    mediaType,
+    uuid,
+  }
 }
 
 export interface PeerChatMessage {
