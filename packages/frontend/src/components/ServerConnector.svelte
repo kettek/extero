@@ -2,15 +2,22 @@
   import { onMount } from "svelte"
   import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator'
   import Peer, { DataConnection } from 'peerjs'
-  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerNameMessage } from '@extero/common/src/api'
+  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerNameMessage, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerNameMessage } from '@extero/common/src/api'
+  import type { Comrade } from "../comrade"
 
   export let username: string
 
   export let peerID: string
   export let localPeer: Peer
-  export let peers: [Peer.DataConnection, Peer.MediaConnection[]][] = []
-  function addPeer(p: Peer.DataConnection) {
-    peers.push([p, []])
+  export let comrades: Comrade[] = []
+  function addComrade(p: Peer.DataConnection) {
+    let comrade = {
+      name: 'pending comrade',
+      peerID: p.peer,
+      mediaConnections: [],
+      dataConnection: p,
+    }
+    comrades.push(comrade)
     p.on('open', () => {
       console.log('opened peer conn', p)
       // TODO: Add/request media channels!
@@ -18,22 +25,28 @@
     })
     p.on('error', () => {
       console.error('lost connection to', p)
-      removePeer(p.peer)
+      removeComrade(p.peer)
     })
     p.on('data', (data: any) => {
+      if (isPeerNameMessage(data)) {
+        console.log(comrade.name, 'is now', data.name)
+        comrade.name = data.name
+      } else if (isPeerChatMessage(data)) {
+        console.log('chat from', comrade.name, ':', data.content)
+      }
       console.log('got peer data', data)
     })
-    console.log('added peer', peers[peers.length-1])
+    console.log('added comrade', comrade)
   }
-  function removePeer(id: string) {
-    let p = peers.findIndex(v=>v[0].peer===id)
-    if (p === -1) return
-    console.log('removed peer', peers[p])
-    peers[p][0].close()
-    for (let mediaChannel of peers[p][1]) {
+  function removeComrade(id: string) {
+    let i = comrades.findIndex(v=>v.peerID === id)
+    if (i === -1) return
+    console.log('removed comrade', comrades[i])
+    for (let mediaChannel of comrades[i].mediaConnections) {
       mediaChannel.close()
     }
-    peers.splice(p, 1)
+    comrades[i].dataConnection.close()
+    comrades.splice(i, 1)
   }
   export let websocket: WebSocket
   export let ready: boolean
@@ -69,7 +82,7 @@
           reject(err)
         })
         localPeer.on('connection', (dc: DataConnection) => {
-          addPeer(dc)
+          addComrade(dc)
         })
         localPeer.on('call', (mc: Peer.MediaConnection) => {
           console.log('got call', mc)
@@ -102,19 +115,13 @@
               room = msg.room
               roomReady = true
             }
-            /*for (let m of msg.members) {
-              if (!peers.find(v=>v[0].peer === m)) {
-                addPeer(localPeer.connect(m))
-              }
-            }*/
-            // TODO: For each member, connect as a peer.
           } else if (isMemberJoinMessage(msg)) {
-            addPeer(localPeer.connect(msg.peerID, {
+            addComrade(localPeer.connect(msg.peerID, {
               serialization: 'json',
               reliable: true,
             }))
           } else if (isMemberLeftMessage(msg)) {
-            removePeer(msg.peerID)
+            removeComrade(msg.peerID)
           }
         }
       })
