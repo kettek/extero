@@ -92,6 +92,12 @@ export interface PeerChatMessage {
 export function isPeerChatMessage(o: any): o is PeerChatMessage {
   return o.type === 'chat'
 }
+export function mkPeerChatMessage(content: string): PeerChatMessage {
+  return {
+    type: 'chat',
+    content,
+  }
+}
 
 export interface PeerNameMessage {
   type: 'name'
@@ -99,4 +105,10 @@ export interface PeerNameMessage {
 }
 export function isPeerNameMessage(o: any): o is PeerNameMessage {
   return o.type === 'name'
+}
+export function mkPeerNameMessage(name: string): PeerNameMessage {
+  return {
+    type: 'name',
+    name,
+  }
 }
