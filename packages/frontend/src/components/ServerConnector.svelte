@@ -6,6 +6,29 @@
 
   export let peerID: string
   export let localPeer: Peer
+  export let peers: [Peer.DataConnection, Peer.MediaConnection[]][] = []
+  function addPeer(p: Peer.DataConnection) {
+    peers.push([p, []])
+    p.on('open', () => {
+      console.log('opened peer conn', p)
+      // TODO: Add/request media channels!
+    })
+    p.on('error', () => {
+      console.error('lost connection to', p)
+      removePeer(p.peer)
+    })
+    console.log('added peer', peers[peers.length-1])
+  }
+  function removePeer(id: string) {
+    let p = peers.findIndex(v=>v[0].peer===id)
+    if (p === -1) return
+    console.log('removed peer', peers[p])
+    peers[p][0].close()
+    for (let mediaChannel of peers[p][1]) {
+      mediaChannel.close()
+    }
+    peers.splice(p, 1)
+  }
   export let websocket: WebSocket
   export let ready: boolean
   let desiredRoom: string
@@ -40,7 +63,7 @@
           reject(err)
         })
         localPeer.on('connection', (dc: DataConnection) => {
-          console.log('we are connected to', dc)
+          addPeer(dc)
         })
         localPeer.on('call', (mc: Peer.MediaConnection) => {
           console.log('got call', mc)
@@ -73,15 +96,16 @@
               room = msg.room
               roomReady = true
             }
-            for (let m of msg.members) {
-              localPeer.connect(m)
-              // TODO: Move to separate Member connection manager, wherein we can reset the media stream if we change devices, etc.
-            }
+            /*for (let m of msg.members) {
+              if (!peers.find(v=>v[0].peer === m)) {
+                addPeer(localPeer.connect(m))
+              }
+            }*/
             // TODO: For each member, connect as a peer.
           } else if (isMemberJoinMessage(msg)) {
-            // TODO: Connect as a peer.
+            addPeer(localPeer.connect(msg.peerID))
           } else if (isMemberLeftMessage(msg)) {
-            // TODO: Remove as a peer.
+            removePeer(msg.peerID)
           }
         }
       })
