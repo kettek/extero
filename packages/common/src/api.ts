@@ -136,3 +136,10 @@ export function mkPeerNameMessage(name: string): PeerNameMessage {
     name,
   }
 }
+
+export interface ChatHistory {
+  from: string
+  content: string
+  timestamp: Date
+  to?: string
+}
