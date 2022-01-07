@@ -35,6 +35,23 @@ import SplitPane from "./SplitPane.svelte"
     pendingChatInput = ''
   }
 
+  let nameColors: Record<string, string> = {}
+  function getNameColor(name: string): string {
+    if (nameColors[name]) return nameColors[name]
+
+    let hash = 0
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash)
+    }
+    let c = '#'
+    for (let i = 0; i < 3; i++) {
+      let value = (hash >> (i * 8)) & 0xFF
+      c += ('00' + value.toString(16)).substr(-2)
+    }
+    nameColors[name] = c
+    return c
+  }
+
   function srcObject(node: HTMLVideoElement, stream: MediaStream) {
     node.srcObject = stream
     return {
@@ -67,9 +84,9 @@ import SplitPane from "./SplitPane.svelte"
     </section>
     <section slot='b' class='soapbox'>
       <section class='comrades'>
-        <div class='comrade-name self'>{username}</div>
+        <div style="color: {getNameColor(username)}" class='comrade-name self'>{username}</div>
         {#each comrades as comrade}
-          <div class='comrade-name'>
+          <div style="color: {getNameColor(comrade.name)}" class='comrade-name'>
             {comrade.name}
           </div>
         {/each}
@@ -77,7 +94,7 @@ import SplitPane from "./SplitPane.svelte"
       <section class='chat'>
         {#each chatHistory as chat}
           <div class='chat-message'>
-            <div class='chat-message-from'>
+            <div style="color: {getNameColor(chat.from)}" class='chat-message-from'>
               {chat.from}
               <span class='chat-message-date'>
                 {chat.timestamp.toLocaleString()}
@@ -145,6 +162,9 @@ import SplitPane from "./SplitPane.svelte"
   .chat-message-content {
     margin-left: 1em;
     word-break: break-word;
+  }
+  .comrades {
+    padding: 1em;
   }
   .comrade-name.self {
     font-weight: bold;
