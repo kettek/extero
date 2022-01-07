@@ -2,7 +2,9 @@
   import { onMount } from "svelte"
   import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator'
   import Peer, { DataConnection } from 'peerjs'
-  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, mkHelloMessage, mkJoinRoomMessage } from '@extero/common/src/api'
+  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerNameMessage } from '@extero/common/src/api'
+
+  export let username: string
 
   export let peerID: string
   export let localPeer: Peer
@@ -12,6 +14,7 @@
     p.on('open', () => {
       console.log('opened peer conn', p)
       // TODO: Add/request media channels!
+      p.send(mkPeerNameMessage(username))
     })
     p.on('error', () => {
       console.error('lost connection to', p)

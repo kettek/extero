@@ -2,14 +2,22 @@
 	import { v4 } from 'uuid'
 	import { onMount } from 'svelte'
 	import DeviceChooser from './components/DeviceChooser.svelte'
-import { Server } from 'ws'
-import ServerConnector from './components/ServerConnector.svelte'
+	import { Server } from 'ws'
+	import ServerConnector from './components/ServerConnector.svelte'
+  import { uniqueNamesGenerator, colors, starWars } from 'unique-names-generator'
 
 	let initErrors: Error[] = []
 
 	let websocket: WebSocket
 	let room: string = ''
 	let serverReady: boolean = false
+
+	// TODO: Restore username from local storage.
+	let username: string = uniqueNamesGenerator({
+    dictionaries: [colors, starWars],
+    separator: ' ',
+    style: 'capital',
+  })
 
 	let videoDevice: string = ''
 	let videoWidth: number = 1920
@@ -64,7 +72,7 @@ import ServerConnector from './components/ServerConnector.svelte'
 		<section>
 			<header>extero</header>
 			<article>
-				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady}></ServerConnector>
+				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username></ServerConnector>
 				{#if serverReady}
 					{#if !devicesReady}
 						<DeviceChooser bind:videoDevice bind:videoWidth bind:videoHeight bind:videoFacing bind:videoFramerate bind:audioDevice bind:ready={devicesReady}></DeviceChooser>
