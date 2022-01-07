@@ -10,6 +10,7 @@
 	import MediaChooser from './components/MediaChooser.svelte'
 	import type { Comrade } from './comrade'
 	import Room from './components/Room.svelte'
+	import type { ChatHistory } from '@extero/common/src/api'
 
 	let initErrors: Error[] = []
 
@@ -32,6 +33,7 @@
 	let audioDevice: string = ''
 	let devicesReady: boolean = false
 	let comrades: Comrade[]
+	let chatHistory: ChatHistory[]
 
 	let roomReady: boolean = false
 
@@ -75,10 +77,10 @@
 			</article>
 		</section>
 	{:else}
-		<section>
+		<section class:roomReady>
 			<header>extero</header>
-			<article>
-				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username bind:medias bind:comrades></ServerConnector>
+			<article class:roomReady>
+				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username bind:medias bind:comrades bind:chatHistory></ServerConnector>
 				{#if serverReady}
 					{#if !nameReady}
 						<NameChooser bind:username bind:nameReady></NameChooser>
@@ -87,7 +89,7 @@
 					{:else if !roomReady}
 						<RoomChooser bind:room bind:roomReady></RoomChooser>
 					{:else}
-						<Room room={room} bind:username comrades={comrades}></Room>
+						<Room room={room} bind:username comrades={comrades} bind:chatHistory></Room>
 					{/if}
 				{/if}
 			</article>
@@ -102,6 +104,8 @@
 		background-color: #222;
 		color: #aaa;
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr);
 		align-items: center;
 		justify-content: center;
 	}
@@ -111,20 +115,32 @@
 		justify-content: center;
 		grid-template-rows: auto minmax(0, 1fr);
 		padding: 1em;
-		background: #111;
+	}
+	section.roomReady {
+		width: 100%;
+		height: 100%;
+		align-items: initial;
+		justify-content: initial;
+		padding: 0;
 	}
 	header {
 		text-align: center;
 		font-size: 200%;
 		font-weight: 600;
+		background: #111;
 	}
 	article {
+		background: #111;
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-columns: minmax(0, 1fr);
 		padding: .5em;
 		max-width: 70ch;
 	}
-	input {
+	article.roomReady {
 		width: 100%;
+		height: 100%;
+		max-width: 100%;
+		max-height: 100%;
+		overflow: hidden;
 	}
 </style>

@@ -1,7 +1,7 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import Peer, { DataConnection, MediaConnection } from 'peerjs'
-  import { isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage } from '@extero/common/src/api'
+  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage } from '@extero/common/src/api'
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
 
@@ -11,6 +11,7 @@
   export let localPeer: Peer
   export let comrades: Comrade[] = []
   export let medias: Media[] = []
+  export let chatHistory: ChatHistory[] = []
 
   function refreshComrades() {
     comrades = [...comrades]
@@ -42,7 +43,12 @@
         console.log(comrade.name, 'is now', data.name)
         comrade.name = data.name
       } else if (isPeerChatMessage(data)) {
-        console.log('chat from', comrade.name, ':', data.content)
+        chatHistory.push({
+          from: comrade.name,
+          content: data.content,
+          timestamp: new Date(),
+        })
+        chatHistory = [...chatHistory]
       } else if (isPeerMediaAdvertise(data)) {
         console.log('got media advertise', data)
         // TODO: Gauge how much media we want to consume. For now accept all.
