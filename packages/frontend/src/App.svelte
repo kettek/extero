@@ -75,7 +75,7 @@ import MediaChooser from './components/MediaChooser.svelte'
 		<section>
 			<header>extero</header>
 			<article>
-				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username></ServerConnector>
+				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username bind:medias></ServerConnector>
 				{#if serverReady}
 					{#if !nameReady}
 						<NameChooser bind:username bind:nameReady></NameChooser>

@@ -10,7 +10,8 @@
   export let peerID: string
   export let localPeer: Peer
   export let comrades: Comrade[] = []
-  export let media: Media[] = []
+  export let medias: Media[] = []
+
   function addComrade(p: Peer.DataConnection) {
     let comrade = {
       name: 'pending comrade',
@@ -23,7 +24,7 @@
       console.log('opened peer conn', p)
       p.send(mkPeerNameMessage(username))
       // Advertise our current media sources.
-      for (let m of media) {
+      for (let m of medias) {
         p.send(mkPeerMediaAdvertise(m.mediaType, m.uuid))
       }
     })
