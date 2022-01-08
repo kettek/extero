@@ -1,5 +1,5 @@
 <script type='ts'>
-  import { ChatHistory, mkPeerChatMessage } from "@extero/common/src/api"
+  import { ChatHistory, mkPeerChatMessage, mkPeerNameMessage } from "@extero/common/src/api"
 
   import type { Comrade } from "../comrade"
   import ComradeView from "./ComradeView.svelte"
@@ -91,6 +91,30 @@
     }
   }
 
+  let editUsername: boolean = false
+  let pendingUsername: string = ''
+  function startEditUsername() {
+    editUsername = true
+    pendingUsername = username
+  }
+  function cancelEditUsername() {
+    editUsername = false
+  }
+  function commitPendingUsername() {
+    username = pendingUsername
+    for (let c of comrades) {
+      c.dataConnection.send(mkPeerNameMessage(username))
+    }
+    editUsername = false
+  }
+  function usernameKeyup(e: KeyboardEvent) {
+    if (e.code === 'Enter') {
+      commitPendingUsername()
+    } else if (e.code === 'Escape') {
+      cancelEditUsername()
+    }
+  }
+
 </script>
 
 <main>
@@ -122,7 +146,16 @@
         </section>
       </section>
       <section class='comrades'>
-        <div style="color: {getNameColor(username)}" class='comrade-name self'>{username}</div>
+        <div style="color: {getNameColor(username)}" class='comrade-name self'>
+          {#if editUsername}
+            <input type='text' bind:value={pendingUsername} on:keyup={usernameKeyup}>
+            <span on:click={cancelEditUsername}>🚫️</span>
+            <span on:click={commitPendingUsername}>✔️</span>
+          {:else}
+            <span>{username}</span>
+            <span on:click={startEditUsername}>✏️</span>
+          {/if}
+        </div>
         {#each comrades as comrade}
           <div style="color: {getNameColor(comrade.name)}" class='comrade-name'>
             {comrade.name}
