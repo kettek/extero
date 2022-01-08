@@ -1,7 +1,7 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import Peer, { DataConnection, MediaConnection } from 'peerjs'
-  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage } from '@extero/common/src/api'
+  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage } from '@extero/common/src/api'
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
 
@@ -40,7 +40,8 @@
         p.send(mkPeerMediaAdvertise(m.mediaType, m.uuid))
       }
     })
-    p.on('error', () => {
+    p.on('error', (err: any) => {
+      console.error(err)
       console.error('lost connection to', p)
       removeComrade(p.peer)
     })
@@ -48,6 +49,9 @@
       if (isPeerNameMessage(data)) {
         console.log(comrade.name, 'is now', data.name)
         comrade.name = data.name
+      } else if (isPeerColorMessage(data)) {
+        console.log(comrade.name, 'is now', data.color)
+        comrade.color = data.color
       } else if (isPeerChatMessage(data)) {
         chatHistory.push({
           from: comrade.name,

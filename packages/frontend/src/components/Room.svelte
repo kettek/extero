@@ -66,11 +66,12 @@
     if (!comrade.color) return getNameColor(comrade.name)
     return comrade.color
   }
-  function getSelfColor(): string {
-    if (!usercolor) return getNameColor(username)
-    return usercolor
+  function getSelfColor(color: string): string {
+    if (!color) return getNameColor(username)
+    return color
   }
   function findComradeColorFromName(name: string): string {
+    if (name === username) return getSelfColor()
     let comrade = comrades.find(v=>v.name === name)
     if (comrade) {
       return getComradeColor(comrade)
@@ -135,7 +136,7 @@
   }
 
   // Send network updates when we change our usercolor.
-  $: {
+  function updateColor() {
     for (let c of comrades) {
       c.dataConnection.send(mkPeerColorMessage(usercolor))
     }
@@ -172,7 +173,7 @@
         </section>
       </section>
       <section class='comrades'>
-        <div style="color: {getSelfColor()}" class='comrade-name self'>
+        <div style="color: {getSelfColor(usercolor)}" class='comrade-name self'>
           {#if editUsername}
             <input type='text' bind:value={pendingUsername} on:keyup={usernameKeyup}>
             <span on:click={cancelEditUsername}>🚫️</span>
@@ -181,7 +182,7 @@
             <span>{username}</span>
             <span on:click={startEditUsername}>✏️</span>
           {/if}
-          <input type='color' bind:value={username}/>
+          <input type='color' bind:value={usercolor} on:change={updateColor}/>
         </div>
         {#each comrades as comrade}
           <div style="color: {getComradeColor(comrade)}" class='comrade-name'>
