@@ -186,6 +186,9 @@
     padding: .5em;
     z-index: 1;
   }
+  .chat {
+    overflow: auto;
+  }
   .chat-message {
     display: flex;
     align-items: flex-start;
