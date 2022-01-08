@@ -8,6 +8,64 @@
   $: primaryStream = captureStream || cameraStream
   $: secondaryStream = (captureStream && cameraStream) ? cameraStream : undefined
 
+  let primaryElement: HTMLVideoElement
+  let secondaryElement: HTMLVideoElement
+
+  let primaryContext: AudioContext
+  let secondaryContext: AudioContext
+
+  let primaryGain: GainNode
+  let secondaryGain: GainNode
+
+  $: {
+    if (comrade && primaryGain) {
+      if (comrade.volume === 0) {
+        primaryGain.gain.value = 0
+      } else {
+        primaryGain.gain.value = (comrade.volume-100)/100
+      }
+    }
+  }
+
+  $: {
+    if (comrade && secondaryGain) {
+      if (comrade.volume === 0) {
+        secondaryGain.gain.value = 0
+      } else {
+        secondaryGain.gain.value = (comrade.volume-100)/100
+      }
+    }
+  }
+
+  $: {
+    if (primaryElement) {
+      if (!primaryContext) {
+        primaryContext = new AudioContext()
+        let audioSource = primaryContext.createMediaElementSource(primaryElement)
+        primaryGain = primaryContext.createGain()
+        audioSource.connect(primaryGain)
+        primaryGain.connect(primaryContext.destination)
+        console.log('added primary audio context')
+      }
+    } else if (primaryContext) {
+      primaryContext.close()
+      secondaryContext = undefined
+    }
+    if (secondaryElement) {
+      if (!secondaryContext) {
+        secondaryContext = new AudioContext()
+        let audioSource = secondaryContext.createMediaElementSource(secondaryElement)
+        secondaryGain = secondaryContext.createGain()
+        audioSource.connect(secondaryGain)
+        secondaryGain.connect(secondaryContext.destination)
+        console.log('added secondary audio context')
+      }
+    } else if (secondaryContext) {
+      secondaryContext.close()
+      secondaryContext = undefined
+    }
+  }
+
   function srcObject(node: HTMLVideoElement, stream: MediaStream) {
     node.srcObject = stream
     return {
@@ -22,17 +80,17 @@
 
 {#if primaryStream}
   <div>
-    <video class='primary' use:srcObject={primaryStream.stream} autoplay playsinline volume={comrade.volume/100} muted={comrade.volume==0}>
+    <video bind:this={primaryElement} class='primary' use:srcObject={primaryStream.stream} autoplay playsinline muted={comrade.volume===0}>
       <track kind='captions'>
     </video>
     {#if secondaryStream}
-      <video class='secondary' use:srcObject={secondaryStream.stream} autoplay playsinline volume={comrade.volume/100} muted={comrade.volume==0}>
+      <video bind:this={secondaryElement} class='secondary' use:srcObject={secondaryStream.stream} autoplay playsinline muted={comrade.volume===0}>
         <track kind='captions'>
       </video>
     {/if}
     <aside class='controls'>
-      <input type='range' orient='vertical' bind:value={comrade.volume} min=0 max=100 step=1/>
-      <input type='number' bind:value={comrade.volume} min=0 max=100 step=1/>
+      <input type='range' orient='vertical' bind:value={comrade.volume} min=0 max=200 step=0.25/>
+      <input type='number' bind:value={comrade.volume} min=0 max=200 step=0.25/>
     </aside>
   </div>
 {/if}
