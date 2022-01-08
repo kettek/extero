@@ -2,13 +2,17 @@
   import { ChatHistory, mkPeerChatMessage } from "@extero/common/src/api"
 
   import type { Comrade } from "../comrade"
-import SplitPane from "./SplitPane.svelte"
+  import ComradeView from "./ComradeView.svelte"
+  import SplitPane from "./SplitPane.svelte"
 
 
   export let room: string
   export let comrades: Comrade[]
   export let username: string
   export let chatHistory: ChatHistory[]
+
+  $: gridCols = `repeat(${1+Math.floor(comrades.length/2)}, minmax(0, 1fr))`
+  $: gridRows = `repeat(${Math.ceil(comrades.length/2)}, minmax(0, 1fr))`
 
   let pendingChatInput: string = ''
 
@@ -51,34 +55,17 @@ import SplitPane from "./SplitPane.svelte"
     nameColors[name] = c
     return c
   }
-
-  function srcObject(node: HTMLVideoElement, stream: MediaStream) {
-    node.srcObject = stream
-    return {
-      update(nextStream: MediaStream) {
-        if (node.srcObject !== nextStream) {
-          node.srcObject = nextStream
-        }
-      },
-    }
-  }
 </script>
 
 <main>
   <SplitPane pos={80} type='horizontal'>
-    <section slot='a' class='feed'>
+    <section slot='a' class='feed' style="grid-template-rows: {gridRows}; grid-template-columns: {gridCols};">
       {#each comrades.filter(v=>v.inboundMedias.length>0) as comrade}
         <section class='comrade-feed'>
           <div style="color: {getNameColor(comrade.name)}" class='comrade-feed-name'>
             {comrade.name}
           </div>
-          {#each comrade.inboundMedias as inbound}
-            {#if inbound.stream}
-              <video use:srcObject={inbound.stream} autoplay playsinline>
-                <track kind='captions'>
-              </video>
-            {/if}
-          {/each}
+          <ComradeView comrade={comrade}></ComradeView>
         </section>
       {/each}
     </section>
@@ -124,14 +111,13 @@ import SplitPane from "./SplitPane.svelte"
   }
   .feed {
     display: grid;
-    grid-template-rows: auto auto;
-    grid-template-columns: auto auto;
+    grid-gap: .5em;
   }
   .comrade-feed {
     position: relative;
     display: grid;
-    grid-template-rows: auto auto;
-    grid-template-columns: auto auto;
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
   .comrade-feed-name {
     position: absolute;
