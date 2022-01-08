@@ -6,10 +6,13 @@
   import SplitPane from "./SplitPane.svelte"
 
 
+  export let medias: Media[] = []
   export let room: string
   export let comrades: Comrade[]
   export let username: string
   export let chatHistory: ChatHistory[]
+  export let muteAudio: boolean
+  export let muteVideo: boolean
 
   $: gridCols = `repeat(${1+Math.floor(comrades.length/2)}, minmax(0, 1fr))`
   $: gridRows = `repeat(${Math.ceil(comrades.length/2)}, minmax(0, 1fr))`
@@ -55,6 +58,39 @@
     nameColors[name] = c
     return c
   }
+
+  function srcObject(node: HTMLVideoElement, stream: MediaStream) {
+    node.srcObject = stream
+    return {
+      update(nextStream: MediaStream) {
+        if (node.srcObject !== nextStream) {
+          node.srcObject = nextStream
+        }
+      },
+    }
+  }
+
+  function toggleAudio() {
+    muteAudio = !muteAudio
+    for (let media of medias) {
+      if (media.stream) {
+        for (let track of media.stream.getAudioTracks()) {
+          track.enabled = !muteAudio
+        }
+      }
+    }
+  }
+  function toggleVideo() {
+    muteVideo = !muteVideo
+    for (let media of medias) {
+      if (media.stream) {
+        for (let track of media.stream.getVideoTracks()) {
+          track.enabled = !muteVideo
+        }
+      }
+    }
+  }
+
 </script>
 
 <main>
@@ -70,6 +106,21 @@
       {/each}
     </section>
     <section slot='b' class='soapbox'>
+      <section class='settings'>
+        <nav>
+          <button class:muted={muteAudio} on:click={toggleAudio}>{muteAudio?'un':''}mute audio</button>
+          <button class:muted={muteVideo} on:click={toggleVideo}>{muteVideo?'un':''}mute video</button>
+        </nav>
+        <section class='self-video'>
+          {#each medias as media}
+            {#if media.stream}
+              <video use:srcObject={media.stream} autoplay playsinline muted>
+                <track kind='captions'>
+              </video>
+            {/if}
+          {/each}
+        </section>
+      </section>
       <section class='comrades'>
         <div style="color: {getNameColor(username)}" class='comrade-name self'>{username}</div>
         {#each comrades as comrade}
@@ -119,6 +170,9 @@
     grid-template-rows: minmax(0, 1fr);
     grid-template-columns: minmax(0, 1fr);
   }
+  button.muted {
+    background: red;
+  }
   .comrade-feed-name {
     position: absolute;
     top: 1em;
@@ -166,15 +220,23 @@
   }
   .soapbox {
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
   }
   .chat-input {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
   }
   video {
     width: 100%;
     height: 100%;
     object-fit: contain;
+  }
+  .settings {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .settings video {
+    max-width: 320px;
+    max-height: 240px;
   }
 </style>

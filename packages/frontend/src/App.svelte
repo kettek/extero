@@ -24,6 +24,8 @@
 
 	let medias: Media[] = []
 	let mediaReady: boolean = false
+	let muteVideo: boolean = false
+	let muteAudio: boolean = false
 
 	let videoDevice: string = ''
 	let videoWidth: number = 1920
@@ -89,7 +91,7 @@
 					{:else if !roomReady}
 						<RoomChooser bind:room bind:roomReady></RoomChooser>
 					{:else}
-						<Room room={room} bind:username comrades={comrades} bind:chatHistory></Room>
+						<Room room={room} bind:username comrades={comrades} bind:chatHistory bind:medias bind:muteAudio bind:muteVideo></Room>
 					{/if}
 				{/if}
 			</article>
