@@ -138,8 +138,13 @@ export function mkPeerNameMessage(name: string): PeerNameMessage {
 }
 
 export interface ChatHistory {
+  /** Record of the sender of the chat message */
   from: string
+  /** Unprocessed chat content */
   content: string
+  /** Timestamp when the message was received */
   timestamp: Date
   to?: string
+  /** Markdown->HTML processed version of the content. */
+  renderedContent?: string
 }
