@@ -5,6 +5,8 @@
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
 
+  import { toMarkdown } from '../markdown'
+
   export let username: string
 
   export let peerID: string
@@ -47,6 +49,7 @@
         chatHistory.push({
           from: comrade.name,
           content: data.content,
+          renderedContent: toMarkdown(data.content),
           timestamp: new Date(),
         })
         chatHistory = [...chatHistory]

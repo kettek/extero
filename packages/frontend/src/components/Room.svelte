@@ -4,7 +4,9 @@
   import type { Comrade } from "../comrade"
   import ComradeView from "./ComradeView.svelte"
   import SplitPane from "./SplitPane.svelte"
+  import type { Media } from "../media"
 
+  import { toMarkdown } from '../markdown'
 
   export let medias: Media[] = []
   export let room: string
@@ -35,6 +37,7 @@
     chatHistory.push({
       from: username,
       content: pendingChatInput,
+      renderedContent: toMarkdown(pendingChatInput),
       timestamp: new Date(),
     })
     chatHistory = [...chatHistory]
@@ -172,7 +175,11 @@
               </span>
             </div>
             <div class='chat-message-content'>
-              {chat.content}
+              {#if chat.renderedContent}
+                {@html chat.renderedContent}
+              {:else}
+                {chat.content}
+              {/if}
             </div>
           </div>
         {/each}
