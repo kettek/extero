@@ -24,6 +24,7 @@
       outboundMedias: [],
       inboundMedias: [],
       dataConnection: p,
+      volume: 50,
     }
     comrades.push(comrade)
     p.on('open', () => {

@@ -15,4 +15,5 @@ export interface Comrade {
   dataConnection: DataConnection
   outboundMedias: MediaReference[]
   inboundMedias: MediaReference[]
+  volume: number
 }
