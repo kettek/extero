@@ -7,6 +7,8 @@
   import type { Media } from "../media"
 
   import { toMarkdown } from '../markdown'
+  import { playSound } from "../sounds"
+  import { onMount } from "svelte"
 
   export let medias: Media[] = []
   export let room: string
@@ -42,6 +44,7 @@
       timestamp: new Date(),
     })
     chatHistory = [...chatHistory]
+    playSound('chat')
 
     pendingChatInput = ''
   }
@@ -142,6 +145,12 @@
     }
   }
 
+  onMount(() => {
+    playSound('self_join')
+    return () => {
+      playSound('self_leave')
+    }
+  })
 </script>
 
 <main>

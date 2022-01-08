@@ -6,6 +6,7 @@
   import type { Media } from "../media"
 
   import { toMarkdown } from '../markdown'
+  import { playSound } from '../sounds'
 
   export let username: string
   export let usercolor: string
@@ -60,6 +61,7 @@
           timestamp: new Date(),
         })
         chatHistory = [...chatHistory]
+        playSound('chat')
       } else if (isPeerMediaAdvertise(data)) {
         console.log('got media advertise', data)
         // TODO: Gauge how much media we want to consume. For now accept all.
@@ -111,10 +113,10 @@
     if (i === -1) return
     console.log('removed comrade', comrades[i])
     for (let media of comrades[i].outboundMedias) {
-      media.mediaConnection.close()
+      if (media.mediaConnection) media.mediaConnection.close()
     }
     for (let media of comrades[i].inboundMedias) {
-      media.mediaConnection.close()
+      if (media.mediaConnection) media.mediaConnection.close()
     }
     comrades[i].dataConnection.close()
     comrades.splice(i, 1)
@@ -224,8 +226,10 @@
               serialization: 'json',
               reliable: true,
             }))
+            playSound('com_join')
           } else if (isMemberLeftMessage(msg)) {
             removeComrade(msg.peerID)
+            playSound('com_leave')
           }
         }
       })
