@@ -7,6 +7,7 @@
     separator: ' ',
     style: 'capital',
   })
+  export let usercolor: string
 </script>
 
 <main>
@@ -14,6 +15,9 @@
     <label>
       <span>Name</span>
       <input type='text' bind:value={username}/>
+    </label>
+    <label>
+      <input type='color' bind:value={usercolor}/>
     </label>
   </section>
   <button on:click={()=>nameReady=true}>okay</button>

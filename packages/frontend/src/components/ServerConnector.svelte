@@ -1,13 +1,14 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import Peer, { DataConnection, MediaConnection } from 'peerjs'
-  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage } from '@extero/common/src/api'
+  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage } from '@extero/common/src/api'
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
 
   import { toMarkdown } from '../markdown'
 
   export let username: string
+  export let usercolor: string
 
   export let peerID: string
   export let localPeer: Peer
@@ -27,11 +28,13 @@
       inboundMedias: [],
       dataConnection: p,
       volume: 100,
+      color: '',
     }
     comrades.push(comrade)
     p.on('open', () => {
       console.log('opened peer conn', p)
       p.send(mkPeerNameMessage(username))
+      p.send(mkPeerColorMessage(usercolor))
       // Advertise our current media sources.
       for (let m of medias) {
         p.send(mkPeerMediaAdvertise(m.mediaType, m.uuid))

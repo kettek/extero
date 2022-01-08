@@ -20,6 +20,7 @@
 
 	// TODO: Restore username from local storage.
 	let username: string
+	let usercolor: string = ''
 	let nameReady: boolean = false
 
 	let medias: Media[] = []
@@ -82,16 +83,16 @@
 		<section class:roomReady>
 			<header>extero</header>
 			<article class:roomReady>
-				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username bind:medias bind:comrades bind:chatHistory></ServerConnector>
+				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username bind:usercolor bind:medias bind:comrades bind:chatHistory></ServerConnector>
 				{#if serverReady}
 					{#if !nameReady}
-						<NameChooser bind:username bind:nameReady></NameChooser>
+						<NameChooser bind:username bind:usercolor bind:nameReady></NameChooser>
 					{:else if !mediaReady}
 						<MediaChooser bind:ready={mediaReady} bind:medias></MediaChooser>
 					{:else if !roomReady}
 						<RoomChooser bind:room bind:roomReady></RoomChooser>
 					{:else}
-						<Room room={room} bind:username comrades={comrades} bind:chatHistory bind:medias bind:muteAudio bind:muteVideo></Room>
+						<Room room={room} bind:username bind:usercolor comrades={comrades} bind:chatHistory bind:medias bind:muteAudio bind:muteVideo></Room>
 					{/if}
 				{/if}
 			</article>

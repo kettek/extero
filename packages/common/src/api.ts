@@ -137,6 +137,20 @@ export function mkPeerNameMessage(name: string): PeerNameMessage {
   }
 }
 
+export interface PeerColorMessage {
+  type: 'color'
+  color: string
+}
+export function isPeerColorMessage(o: any): o is PeerColorMessage {
+  return o.type === 'color'
+}
+export function mkPeerColorMessage(color: string): PeerColorMessage {
+  return {
+    type: 'color',
+    color,
+  }
+}
+
 export interface ChatHistory {
   /** Record of the sender of the chat message */
   from: string

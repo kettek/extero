@@ -1,5 +1,5 @@
 <script type='ts'>
-  import { ChatHistory, mkPeerChatMessage, mkPeerNameMessage } from "@extero/common/src/api"
+  import { ChatHistory, mkPeerChatMessage, mkPeerColorMessage, mkPeerNameMessage } from "@extero/common/src/api"
 
   import type { Comrade } from "../comrade"
   import ComradeView from "./ComradeView.svelte"
@@ -12,6 +12,7 @@
   export let room: string
   export let comrades: Comrade[]
   export let username: string
+  export let usercolor: string
   export let chatHistory: ChatHistory[]
   export let muteAudio: boolean
   export let muteVideo: boolean
@@ -60,6 +61,21 @@
     }
     nameColors[name] = c
     return c
+  }
+  function getComradeColor(comrade: Comrade): string {
+    if (!comrade.color) return getNameColor(comrade.name)
+    return comrade.color
+  }
+  function getSelfColor(): string {
+    if (!usercolor) return getNameColor(username)
+    return usercolor
+  }
+  function findComradeColorFromName(name: string): string {
+    let comrade = comrades.find(v=>v.name === name)
+    if (comrade) {
+      return getComradeColor(comrade)
+    }
+    return getNameColor(name)
   }
 
   function srcObject(node: HTMLVideoElement, stream: MediaStream) {
@@ -118,6 +134,13 @@
     }
   }
 
+  // Send network updates when we change our usercolor.
+  $: {
+    for (let c of comrades) {
+      c.dataConnection.send(mkPeerColorMessage(usercolor))
+    }
+  }
+
 </script>
 
 <main>
@@ -125,7 +148,7 @@
     <section slot='a' class='feed' style="grid-template-rows: {gridRows}; grid-template-columns: {gridCols};">
       {#each comrades.filter(v=>v.inboundMedias.length>0) as comrade}
         <section class='comrade-feed'>
-          <div style="color: {getNameColor(comrade.name)}" class='comrade-feed-name'>
+          <div style="color: {getComradeColor(comrade)}" class='comrade-feed-name'>
             {comrade.name}
           </div>
           <ComradeView comrade={comrade}></ComradeView>
@@ -149,7 +172,7 @@
         </section>
       </section>
       <section class='comrades'>
-        <div style="color: {getNameColor(username)}" class='comrade-name self'>
+        <div style="color: {getSelfColor()}" class='comrade-name self'>
           {#if editUsername}
             <input type='text' bind:value={pendingUsername} on:keyup={usernameKeyup}>
             <span on:click={cancelEditUsername}>🚫️</span>
@@ -158,9 +181,10 @@
             <span>{username}</span>
             <span on:click={startEditUsername}>✏️</span>
           {/if}
+          <input type='color' bind:value={username}/>
         </div>
         {#each comrades as comrade}
-          <div style="color: {getNameColor(comrade.name)}" class='comrade-name'>
+          <div style="color: {getComradeColor(comrade)}" class='comrade-name'>
             {comrade.name}
           </div>
         {/each}
@@ -168,7 +192,7 @@
       <section class='chat'>
         {#each chatHistory as chat}
           <div class='chat-message'>
-            <div style="color: {getNameColor(chat.from)}" class='chat-message-from'>
+            <div style="color: {findComradeColorFromName(chat.from)}" class='chat-message-from'>
               {chat.from}
               <span class='chat-message-date'>
                 {chat.timestamp.toLocaleString()}
