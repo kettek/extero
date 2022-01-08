@@ -130,6 +130,7 @@
     justify-content: center;
     border-radius: .25em;
     padding: .5em;
+    z-index: 1;
   }
   .chat-message {
     display: flex;
