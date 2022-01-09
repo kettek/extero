@@ -11,6 +11,7 @@
 	import type { Comrade } from './comrade'
 	import Room from './components/Room.svelte'
 	import type { ChatHistory } from '@extero/common/src/api'
+  import type Peer from 'peerjs'
 
 	let initErrors: Error[] = []
 
@@ -19,6 +20,7 @@
 	let serverReady: boolean = false
 
 	// TODO: Restore username from local storage.
+  let localPeer: Peer
 	let username: string
 	let usercolor: string = ''
 	let nameReady: boolean = false
@@ -83,7 +85,7 @@
 		<section class:roomReady>
 			<header>extero</header>
 			<article class:roomReady>
-				<ServerConnector bind:websocket bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username bind:usercolor bind:medias bind:comrades bind:chatHistory></ServerConnector>
+				<ServerConnector bind:websocket bind:localPeer bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username bind:usercolor bind:medias bind:comrades bind:chatHistory></ServerConnector>
 				{#if serverReady}
 					{#if !nameReady}
 						<NameChooser bind:username bind:usercolor bind:nameReady></NameChooser>
@@ -92,7 +94,7 @@
 					{:else if !roomReady}
 						<RoomChooser bind:room bind:roomReady></RoomChooser>
 					{:else}
-						<Room room={room} bind:username bind:usercolor comrades={comrades} bind:chatHistory bind:medias bind:muteAudio bind:muteVideo></Room>
+						<Room room={room} bind:username bind:usercolor comrades={comrades} bind:chatHistory bind:medias bind:muteAudio bind:muteVideo bind:websocket></Room>
 					{/if}
 				{/if}
 			</article>
