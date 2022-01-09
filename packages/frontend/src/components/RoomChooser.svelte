@@ -5,23 +5,25 @@ import { onMount } from 'svelte';
 
   export let roomReady: boolean = false
   export let room: string = ''
+  let desiredRoom: string = ''
+
+  function joinRoom() {
+    room = desiredRoom
+    roomReady = true
+    let newRelativePathQuery = window.location.pathname + '?' + room
+    history.pushState(null, '', newRelativePathQuery);
+  }
 
   onMount(() => {
     // FIXME: Add room name negotiation.
     const parsedUrl = new URL(window.location.href)
-    let desiredRoom = parsedUrl?.search.substring(1)
+    desiredRoom = parsedUrl?.search.substring(1)
     if (!desiredRoom) {
       desiredRoom = uniqueNamesGenerator({
         dictionaries: [adjectives, colors, animals],
         separator: '',
         style: 'capital',
       })
-      let newRelativePathQuery = window.location.pathname + '?' + name
-      history.pushState(null, '', newRelativePathQuery);
-      room = desiredRoom
-    } else {
-      room = desiredRoom
-      roomReady = true
     }
   })
 </script>
@@ -30,10 +32,10 @@ import { onMount } from 'svelte';
   <section>
     <label>
       <span>Room</span>
-      <input type='text' bind:value={room}/>
+      <input type='text' bind:value={desiredRoom}/>
     </label>
   </section>
-  <button on:click={()=>roomReady=true}>okay</button>
+  <button on:click={joinRoom}>okay</button>
 </main>
 
 <style>
