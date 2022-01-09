@@ -1,7 +1,7 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import Peer, { DataConnection, MediaConnection } from 'peerjs'
-  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage } from '@extero/common/src/api'
+  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage } from '@extero/common/dist/src/api'
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
 
@@ -228,8 +228,19 @@
             }))
             playSound('com_join')
           } else if (isMemberLeftMessage(msg)) {
-            removeComrade(msg.peerID)
-            playSound('com_leave')
+            // If the left message represents ourself, disconnect and clear out all comrades.
+            if (msg.peerID === localPeer.id) {
+              // Remove all our comrades.
+              for (let c of comrades) {
+                removeComrade(c.peerID)
+              }
+              // Remove our room ready status.
+              room = ''
+              roomReady = false
+            } else {
+              removeComrade(msg.peerID)
+              playSound('com_leave')
+            }
           }
         }
       })
