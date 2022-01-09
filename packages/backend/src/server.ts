@@ -4,7 +4,7 @@ import { ExpressPeerServer } from 'peer'
 import https from 'https'
 import fs from 'fs'
 import { createRoom } from './Room'
-import { isHelloMessage, isLeaveRoomMessage, isJoinRoomMessage, mkMemberJoinMessage, mkJoinRoomMessage, mkMemberLeftMessage, mkHelloMessage } from '@extero/common/src/api'
+import { isHelloMessage, isLeaveRoomMessage, isJoinRoomMessage, mkMemberJoinMessage, mkJoinRoomMessage, mkMemberLeftMessage, mkHelloMessage } from '@extero/common/dist/src/api'
 
 const app = express()
 const port = 3000
@@ -36,6 +36,10 @@ function memberJoinRoom(member: any, roomName: string) {
 		room = rooms[rooms.length-1]
 		isNewRoom = true
 	}
+	if (room.members.find(v=>v===member)) {
+		console.log('member tried to join more than once')
+		return
+	}
 	room.members.push(member)
 	member.room = room.name
 	// Send join-room response with members, excluding the peer itself.
@@ -52,23 +56,29 @@ function memberJoinRoom(member: any, roomName: string) {
 	}
 }
 
-function memberLeaveRoom(member: any, room: string) {
-	let roomIndex = rooms.findIndex(v=>v.name === room)
+function memberLeaveRoom(member: any, roomName: string) {
+	console.log('member left')
+	let roomIndex = rooms.findIndex(v=>v.name === roomName)
 	if (roomIndex === -1) return
-	let memberIndex = rooms[roomIndex].members.findIndex(v=>v.peerID === member.peerID)
+	let room = rooms[roomIndex]
+	let memberIndex = room.members.findIndex(v=>v.peerID === member.peerID)
 	if (memberIndex === -1) return
-	rooms[roomIndex].members.splice(memberIndex, 1)
+	room.members.splice(memberIndex, 1)
 	// Delete if it is empty
-	if (rooms[roomIndex].members.length === 0) {
+	if (room.members.length === 0) {
 		rooms.splice(roomIndex, 1)
 	} else {
 		// Otherwise let existing members know member left.
-		for (let m of rooms[roomIndex].members) {
+		for (let m of room.members) {
 			m.ws.send(JSON.stringify(
-				mkMemberLeftMessage(rooms[roomIndex].name, member.peerID)
+				mkMemberLeftMessage(room.name, member.peerID)
 			))
 		}
 	}
+	// Also let the member know that we know they left.
+	member.ws.send(JSON.stringify(
+		mkMemberLeftMessage(room.name, member.peerID)
+	))
 }
 
 const wss = new WebSocket.Server({ server: roomServer })
@@ -81,7 +91,6 @@ wss.on('connection', ws => {
 	}
 	ws.on('message', (data: WebSocket.Data) => {
 		let msg = JSON.parse(data.toString())
-		console.log('got', msg)
 		if (isHelloMessage(msg)) {
 			if (!msg.peerID) {
 				// TODO: Bad command to send hello without a peerID
