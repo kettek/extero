@@ -1,13 +1,10 @@
 {
+  "extends": "../../tsconfig.json",
   "include": [
     "src/**/*",
   ],
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es2020",
-    "moduleResolution": "node",
-    "sourceMap": true,
+    "composite": true,
     "outDir": "dist",
   },
   "lib": ["esnext"]

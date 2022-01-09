@@ -5,7 +5,7 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "start": "tsc && node dist/server.js",
+    "start": "tsc && node dist/src/server.js",
     "dev": "tsc-watch --noClear --onSuccess \"node dist/server.js\""
   },
   "keywords": [],
