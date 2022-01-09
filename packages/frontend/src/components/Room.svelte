@@ -1,5 +1,5 @@
 <script type='ts'>
-  import { ChatHistory, mkPeerChatMessage, mkPeerColorMessage, mkPeerNameMessage } from "@extero/common/src/api"
+  import { ChatHistory, mkLeaveRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerNameMessage } from "@extero/common/dist/src/api"
 
   import type { Comrade } from "../comrade"
   import ComradeView from "./ComradeView.svelte"
@@ -9,6 +9,8 @@
   import { toMarkdown } from '../markdown'
   import { playSound } from "../sounds"
   import { onMount } from "svelte"
+
+  export let websocket: WebSocket
 
   export let medias: Media[] = []
   export let room: string
@@ -113,6 +115,11 @@
       }
     }
   }
+  function leaveRoom() {
+    websocket?.send(JSON.stringify(
+      mkLeaveRoomMessage(room)
+    ))
+  }
 
   let editUsername: boolean = false
   let pendingUsername: string = ''
@@ -170,6 +177,7 @@
         <nav>
           <button class:muted={muteAudio} on:click={toggleAudio}>{muteAudio?'un':''}mute audio</button>
           <button class:muted={muteVideo} on:click={toggleVideo}>{muteVideo?'un':''}mute video</button>
+          <button on:click={leaveRoom}>leave</button>
         </nav>
         <section class='self-video'>
           {#each medias as media}
