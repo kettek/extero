@@ -221,7 +221,7 @@
     min-width: 60ch;
     min-height: 30ch;
   }
-  main nav {
+  main > nav {
     display: flex;
     justify-content: flex-end;
   }
