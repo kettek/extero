@@ -35,8 +35,16 @@ import { onMount } from 'svelte';
       <input type='text' bind:value={desiredRoom}/>
     </label>
   </section>
-  <button on:click={joinRoom}>okay</button>
+  <nav>
+    <button on:click={joinRoom}>okay</button>
+  </nav>
 </main>
 
 <style>
+  main {
+  }
+  nav {
+    display: flex;
+    justify-content: flex-end;
+  }
 </style>

@@ -221,6 +221,10 @@
     min-width: 60ch;
     min-height: 30ch;
   }
+  main nav {
+    display: flex;
+    justify-content: flex-end;
+  }
   section {
     display: flex;
     flex-wrap: wrap;
