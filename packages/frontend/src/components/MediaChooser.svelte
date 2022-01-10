@@ -38,10 +38,14 @@
 
   async function refreshDevices() {
     pending = 'refreshing devices'
-    await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    })
+    try {
+      await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      })
+    } catch (e: any) {
+      console.error(e)
+    }
     devices = await navigator.mediaDevices.enumerateDevices()
     pending = ''
   }
