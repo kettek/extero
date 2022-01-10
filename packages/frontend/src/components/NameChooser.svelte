@@ -8,16 +8,19 @@
     color: '',
     image: '',
   })
+  export let nameReady: boolean = false
 
   if ($storage.name === '') {
+    randomizeName()
+  }
+
+  function randomizeName() {
     $storage.name = uniqueNamesGenerator({
       dictionaries: [colors, starWars],
       separator: ' ',
       style: 'capital',
     })
   }
-
-  export let nameReady: boolean = false
 </script>
 
 <main>
@@ -25,13 +28,32 @@
     <label>
       <span>Name</span>
       <input type='text' bind:value={$storage.name}/>
+      <button on:click={randomizeName}>🎲</button>
     </label>
     <label>
+      <span>Color</span>
       <input type='color' bind:value={$storage.color}/>
     </label>
   </section>
-  <button on:click={()=>nameReady=true}>okay</button>
+  <nav>
+    <button on:click={()=>nameReady=true}>okay</button>
+  </nav>
 </main>
 
 <style>
+  section {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+  }
+  label {
+    display: flex;
+    align-items: center;
+  }
+  label span {
+    min-width: 4em;
+  }
+  nav {
+    display: flex;
+    justify-content: flex-end;
+  }
 </style>
