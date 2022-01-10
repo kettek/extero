@@ -6,6 +6,9 @@
   import SplitPane from "./SplitPane.svelte"
   import type { Media } from "../media"
 
+  import type { UserI } from "../types/user"
+  import type { Store } from "../stores/localStore"
+
   import { toMarkdown } from '../markdown'
   import { playSound } from "../sounds"
   import { onMount } from "svelte"
@@ -15,8 +18,7 @@
   export let medias: Media[] = []
   export let room: string
   export let comrades: Comrade[]
-  export let username: string
-  export let usercolor: string
+  export let userStorage: Store<UserI>
   export let chatHistory: ChatHistory[]
   export let muteAudio: boolean
   export let muteVideo: boolean
@@ -40,7 +42,7 @@
 
     // Also add it to our own chat history.
     chatHistory.push({
-      from: username,
+      from: $userStorage.name,
       content: pendingChatInput,
       renderedContent: toMarkdown(pendingChatInput),
       timestamp: new Date(),
@@ -71,12 +73,12 @@
     if (!comrade.color) return getNameColor(comrade.name)
     return comrade.color
   }
-  function getSelfColor(color: string): string {
-    if (!color) return getNameColor(username)
+  function getSelfColor(color?: string): string {
+    if (!color) return getNameColor($userStorage.name)
     return color
   }
   function findComradeColorFromName(name: string): string {
-    if (name === username) return getSelfColor()
+    if (name === $userStorage.name) return getSelfColor()
     let comrade = comrades.find(v=>v.name === name)
     if (comrade) {
       return getComradeColor(comrade)
@@ -125,15 +127,15 @@
   let pendingUsername: string = ''
   function startEditUsername() {
     editUsername = true
-    pendingUsername = username
+    pendingUsername = $userStorage.name
   }
   function cancelEditUsername() {
     editUsername = false
   }
   function commitPendingUsername() {
-    username = pendingUsername
+    $userStorage.name = pendingUsername
     for (let c of comrades) {
-      c.dataConnection.send(mkPeerNameMessage(username))
+      c.dataConnection.send(mkPeerNameMessage($userStorage.name))
     }
     editUsername = false
   }
@@ -148,7 +150,7 @@
   // Send network updates when we change our usercolor.
   function updateColor() {
     for (let c of comrades) {
-      c.dataConnection.send(mkPeerColorMessage(usercolor))
+      c.dataConnection.send(mkPeerColorMessage($userStorage.color))
     }
   }
 
@@ -190,16 +192,16 @@
         </section>
       </section>
       <section class='comrades'>
-        <div style="color: {getSelfColor(usercolor)}" class='comrade-name self'>
+        <div style="color: {getSelfColor($userStorage.color)}" class='comrade-name self'>
           {#if editUsername}
             <input type='text' bind:value={pendingUsername} on:keyup={usernameKeyup}>
             <span on:click={cancelEditUsername}>🚫️</span>
             <span on:click={commitPendingUsername}>✔️</span>
           {:else}
-            <span>{username}</span>
+            <span>{$userStorage.name}</span>
             <span on:click={startEditUsername}>✏️</span>
           {/if}
-          <input type='color' bind:value={usercolor} on:change={updateColor}/>
+          <input type='color' bind:value={$userStorage.color} on:change={updateColor}/>
         </div>
         {#each comrades as comrade}
           <div style="color: {getComradeColor(comrade)}" class='comrade-name'>

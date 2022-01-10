@@ -13,13 +13,21 @@
 	import type { ChatHistory } from '@extero/common/src/api'
   import type Peer from 'peerjs'
 
+	// Storage
+	import StorageInitializer from './components/StorageInitializer.svelte'
+	import type { Store } from './stores/localStore'
+	import type { UserI } from './types/user'
+
 	let initErrors: Error[] = []
+
+	let storageReady: boolean = false
 
 	let websocket: WebSocket
 	let room: string = ''
 	let serverReady: boolean = false
 
 	// TODO: Restore username from local storage.
+	let userStorage: Store<UserI>
   let localPeer: Peer
 	let username: string
 	let usercolor: string = ''
@@ -85,16 +93,20 @@
 		<section class:roomReady>
 			<header>extero</header>
 			<article class:roomReady>
-				<ServerConnector bind:websocket bind:localPeer bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:username bind:usercolor bind:medias bind:comrades bind:chatHistory></ServerConnector>
-				{#if serverReady}
-					{#if !nameReady}
-						<NameChooser bind:username bind:usercolor bind:nameReady></NameChooser>
-					{:else if !mediaReady}
-						<MediaChooser bind:ready={mediaReady} bind:medias></MediaChooser>
-					{:else if !roomReady}
-						<RoomChooser bind:room bind:roomReady></RoomChooser>
-					{:else}
-						<Room room={room} bind:username bind:usercolor comrades={comrades} bind:chatHistory bind:medias bind:muteAudio bind:muteVideo bind:websocket></Room>
+				{#if !storageReady}
+					<StorageInitializer bind:ready={storageReady}></StorageInitializer>
+				{:else}
+					<ServerConnector bind:websocket bind:localPeer bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:userStorage bind:medias bind:comrades bind:chatHistory></ServerConnector>
+					{#if serverReady}
+						{#if !nameReady}
+							<NameChooser bind:storage={userStorage} bind:nameReady></NameChooser>
+						{:else if !mediaReady}
+							<MediaChooser bind:ready={mediaReady} bind:medias></MediaChooser>
+						{:else if !roomReady}
+							<RoomChooser bind:room bind:roomReady></RoomChooser>
+						{:else}
+							<Room room={room} bind:userStorage comrades={comrades} bind:chatHistory bind:medias bind:muteAudio bind:muteVideo bind:websocket></Room>
+						{/if}
 					{/if}
 				{/if}
 			</article>

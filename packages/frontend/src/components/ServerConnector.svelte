@@ -8,14 +8,15 @@
   import { toMarkdown } from '../markdown'
   import { playSound } from '../sounds'
 
-  export let username: string
-  export let usercolor: string
+  import type { UserI } from "../types/user"
+  import type { Store } from "../stores/localStore"
 
   export let peerID: string
   export let localPeer: Peer
   export let comrades: Comrade[] = []
   export let medias: Media[] = []
   export let chatHistory: ChatHistory[] = []
+  export let userStorage: Store<UserI>
 
   function refreshComrades() {
     comrades = [...comrades]
@@ -34,8 +35,8 @@
     comrades.push(comrade)
     p.on('open', () => {
       console.log('opened peer conn', p)
-      p.send(mkPeerNameMessage(username))
-      p.send(mkPeerColorMessage(usercolor))
+      p.send(mkPeerNameMessage($userStorage.name))
+      p.send(mkPeerColorMessage($userStorage.color))
       // Advertise our current media sources.
       for (let m of medias) {
         p.send(mkPeerMediaAdvertise(m.mediaType, m.uuid))
