@@ -1,7 +1,7 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import Peer, { DataConnection, MediaConnection } from 'peerjs'
-  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage } from '@extero/common/dist/src/api'
+  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage, mkPeerImageMessage, isPeerImageMessage } from '@extero/common/dist/src/api'
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
 
@@ -37,6 +37,7 @@
       console.log('opened peer conn', p)
       p.send(mkPeerNameMessage($userStorage.name))
       p.send(mkPeerColorMessage($userStorage.color))
+      p.send(mkPeerImageMessage($userStorage.image))
       // Advertise our current media sources.
       for (let m of medias) {
         p.send(mkPeerMediaAdvertise(m.mediaType, m.uuid))
@@ -54,6 +55,8 @@
       } else if (isPeerColorMessage(data)) {
         console.log(comrade.name, 'is now', data.color)
         comrade.color = data.color
+      } else if (isPeerImageMessage(data)) {
+        comrade.image = data.image
       } else if (isPeerChatMessage(data)) {
         chatHistory.push({
           from: comrade.name,

@@ -151,6 +151,20 @@ export function mkPeerColorMessage(color: string): PeerColorMessage {
   }
 }
 
+export interface PeerImageMessage {
+  type: 'image'
+  image: string
+}
+export function isPeerImageMessage(o: any): o is PeerImageMessage {
+  return o.type === 'image'
+}
+export function mkPeerImageMessage(image: string): PeerImageMessage {
+  return {
+    type: 'image',
+    image,
+  }
+}
+
 export interface ChatHistory {
   /** Record of the sender of the chat message */
   from: string

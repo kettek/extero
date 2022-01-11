@@ -17,4 +17,5 @@ export interface Comrade {
   inboundMedias: MediaReference[]
   volume: number
   color: string
+  image?: string
 }

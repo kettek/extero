@@ -192,20 +192,34 @@
         </section>
       </section>
       <section class='comrades'>
-        <div style="color: {getSelfColor($userStorage.color)}" class='comrade-name self'>
-          {#if editUsername}
-            <input type='text' bind:value={pendingUsername} on:keyup={usernameKeyup}>
-            <span on:click={cancelEditUsername}>🚫️</span>
-            <span on:click={commitPendingUsername}>✔️</span>
-          {:else}
-            <span>{$userStorage.name}</span>
-            <span on:click={startEditUsername}>✏️</span>
-          {/if}
-          <input type='color' bind:value={$userStorage.color} on:change={updateColor}/>
+        <div style="color: {getSelfColor($userStorage.color)}" class='comrade-chat self'>
+          <div class='comrade-chat-image'>
+            {#if $userStorage.image}
+              <img src={$userStorage.image} alt={$userStorage.name} />
+            {/if}
+          </div>
+          <div>
+            {#if editUsername}
+              <input type='text' bind:value={pendingUsername} on:keyup={usernameKeyup}>
+              <span on:click={cancelEditUsername}>🚫️</span>
+              <span on:click={commitPendingUsername}>✔️</span>
+            {:else}
+              <span>{$userStorage.name}</span>
+              <span on:click={startEditUsername}>✏️</span>
+            {/if}
+            <input type='color' bind:value={$userStorage.color} on:change={updateColor}/>
+          </div>
         </div>
         {#each comrades as comrade}
-          <div style="color: {getComradeColor(comrade)}" class='comrade-name'>
-            {comrade.name}
+          <div style="color: {getComradeColor(comrade)}" class='comrade-chat'>
+            <div class='comrade-chat-image'>
+              {#if comrade.image}
+                <img src={comrade.image} alt={comrade.name} />
+              {/if}
+            </div>
+            <div class='comrade-chat-name'>
+              {comrade.name}
+            </div>
           </div>
         {/each}
       </section>
@@ -302,8 +316,21 @@
     background: rgba(32, 32, 32, 0.5);
     margin: 0 1em 1em 1em;
   }
-  .comrade-name.self {
+  .comrade-chat.self {
     font-weight: bold;
+  }
+  .comrade-chat {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .comrade-chat-image {
+    width: 2em;
+    height: 2em;
+  }
+  .comrade-chat-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
   .soapbox {
     display: grid;
