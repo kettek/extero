@@ -1,5 +1,6 @@
 <script type='ts'>
   import { ChatHistory, mkLeaveRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerNameMessage } from "@extero/common/dist/src/api"
+  import { serialize } from 'bson'
 
   import type { Comrade } from "../comrade"
   import ComradeView from "./ComradeView.svelte"
@@ -37,7 +38,7 @@
     if (!pendingChatInput) return
 
     for (let comrade of comrades) {
-      comrade.dataConnection.send(mkPeerChatMessage(pendingChatInput))
+      comrade.dataConnection.send(serialize(mkPeerChatMessage(pendingChatInput)))
     }
 
     // Also add it to our own chat history.
@@ -135,7 +136,7 @@
   function commitPendingUsername() {
     $userStorage.name = pendingUsername
     for (let c of comrades) {
-      c.dataConnection.send(mkPeerNameMessage($userStorage.name))
+      c.dataConnection.send(serialize(mkPeerNameMessage($userStorage.name)))
     }
     editUsername = false
   }
@@ -150,7 +151,7 @@
   // Send network updates when we change our usercolor.
   function updateColor() {
     for (let c of comrades) {
-      c.dataConnection.send(mkPeerColorMessage($userStorage.color))
+      c.dataConnection.send(serialize(mkPeerColorMessage($userStorage.color)))
     }
   }
 

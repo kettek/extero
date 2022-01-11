@@ -11,7 +11,7 @@
   export let nameReady: boolean = false
 
   let error: string = ''
-  let maxImageSize: number = 1024 * 200
+  let maxImageSize: number = 1024 * 1024 * 2
 
   if ($storage.name === '') {
     randomizeName()
