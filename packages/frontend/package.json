@@ -14,7 +14,6 @@
     "@rollup/plugin-node-resolve": "^11.0.0",
     "@rollup/plugin-typescript": "^8.0.0",
     "@tsconfig/svelte": "^2.0.0",
-    "@types/bson": "^4.2.0",
     "@types/escape-html": "^1.0.1",
     "@types/markdown-it": "^12.2.3",
     "bson": "^4.6.1",
