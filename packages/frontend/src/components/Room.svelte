@@ -78,7 +78,7 @@
     return color
   }
   function findComradeColorFromName(name: string): string {
-    if (name === $userStorage.name) return getSelfColor()
+    if (name === $userStorage.name) return getSelfColor($userStorage.color)
     let comrade = comrades.find(v=>v.name === name)
     if (comrade) {
       return getComradeColor(comrade)
