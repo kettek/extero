@@ -116,13 +116,13 @@ wss.on('connection', ws => {
 		if (timeSinceLastPong >= 30000) { // Kick after 30 seconds.
 		  return ws.terminate()
 		}
-		if (!member.mightBeLost && timeSinceLastPong >= 5000) { // Notify members of possible d/c after 5 seconds.
+		if (!member.mightBeLost && timeSinceLastPong >= 6000) { // Notify members of possible d/c after 6 seconds.
 			member.mightBeLost = true
 			memberUpdateConnection(member, member.room)
 		}
 
 		ws.ping()
-	}, 5000)
+	}, 3000)
 
 	ws.on('message', (data: WebSocket.Data) => {
 		let msg = JSON.parse(data.toString())
@@ -145,6 +145,9 @@ wss.on('connection', ws => {
 	ws.on('close', () => {
 		clearInterval(hbInterval)
 		memberLeaveRoom(member, member.room)
+	})
+	ws.on('error', (err: any) => {
+		console.error(err)
 	})
 
 	ws.send(JSON.stringify(
