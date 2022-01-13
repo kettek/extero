@@ -9,6 +9,7 @@
 
   import type { UserI } from "../types/user"
   import type { Store } from "../stores/localStore"
+  import { mediaStore } from "../stores/media"
 
   import { toMarkdown } from '../markdown'
   import { playSound } from "../sounds"
@@ -18,7 +19,6 @@
 
   export let websocket: WebSocket
 
-  export let medias: Media[] = []
   export let room: string
   export let comrades: Comrade[]
   export let userStorage: Store<UserI>
@@ -124,7 +124,7 @@
 
   function toggleAudio() {
     muteAudio = !muteAudio
-    for (let media of medias) {
+    for (let media of $mediaStore) {
       if (media.stream) {
         for (let track of media.stream.getAudioTracks()) {
           track.enabled = !muteAudio
@@ -134,7 +134,7 @@
   }
   function toggleVideo() {
     muteVideo = !muteVideo
-    for (let media of medias) {
+    for (let media of $mediaStore) {
       if (media.stream) {
         for (let track of media.stream.getVideoTracks()) {
           track.enabled = !muteVideo
@@ -207,7 +207,7 @@
           <button on:click={leaveRoom}>leave</button>
         </nav>
         <section class='self-video'>
-          {#each medias as media}
+          {#each $mediaStore as media}
             {#if media.stream}
               <video use:srcObject={media.stream} autoplay playsinline muted>
                 <track kind='captions'>

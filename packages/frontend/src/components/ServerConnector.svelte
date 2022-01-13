@@ -6,6 +6,7 @@
   import type { Media } from "../media"
 
   import { fileStore, PendingSend } from "../stores/files"
+  import { mediaStore } from "../stores/media"
 
   import { toMarkdown } from '../markdown'
   import { playSound } from '../sounds'
@@ -14,10 +15,8 @@
   import type { Store } from "../stores/localStore"
   import { chatStore } from "../stores/chat"
 
-  export let peerID: string
   export let localPeer: Peer
   export let comrades: Comrade[] = []
-  export let medias: Media[] = []
   export let userStorage: Store<UserI>
 
   function refreshComrades() {
@@ -45,7 +44,7 @@
       p.send(mkPeerColorMessage($userStorage.color))
       p.send(mkPeerImageMessage($userStorage.image))
       // Advertise our current media sources.
-      for (let m of medias) {
+      for (let m of $mediaStore) {
         p.send(mkPeerMediaAdvertise(m.mediaType, m.uuid))
       }
     })
@@ -77,7 +76,7 @@
         p.send(mkPeerMediaRequest(data.uuid))
       } else if (isPeerMediaRequest(data)) {
         // find it, yo.
-        let media = medias.find(v=>v.uuid===data.uuid)
+        let media = $mediaStore.find(v=>v.uuid===data.uuid)
         if (!media) {
           throw new Error(`media request for ${data.uuid} is bogus`)
         }

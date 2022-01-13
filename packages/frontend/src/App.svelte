@@ -29,24 +29,13 @@
 	// TODO: Restore username from local storage.
 	let userStorage: Store<UserI>
   let localPeer: Peer
-	let username: string
-	let usercolor: string = ''
 	let nameReady: boolean = false
 
-	let medias: Media[] = []
 	let mediaReady: boolean = false
 	let muteVideo: boolean = false
 	let muteAudio: boolean = false
 
-	let videoDevice: string = ''
-	let videoWidth: number = 1920
-	let videoHeight: number = 1080
-	let videoFramerate: number = 30
-	let videoFacing: 'user' | 'environment' = 'user'
-	let audioDevice: string = ''
-	let devicesReady: boolean = false
 	let comrades: Comrade[]
-	let chatHistory: ChatHistory[]
 
 	let roomReady: boolean = false
 
@@ -96,16 +85,16 @@
 				{#if !storageReady}
 					<StorageInitializer bind:ready={storageReady}></StorageInitializer>
 				{:else}
-					<ServerConnector bind:websocket bind:localPeer bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:userStorage bind:medias bind:comrades bind:chatHistory></ServerConnector>
+					<ServerConnector bind:websocket bind:localPeer bind:ready={serverReady} bind:room={room} bind:roomReady={roomReady} bind:userStorage bind:comrades></ServerConnector>
 					{#if serverReady}
 						{#if !nameReady}
 							<NameChooser bind:storage={userStorage} bind:nameReady></NameChooser>
 						{:else if !mediaReady}
-							<MediaChooser bind:ready={mediaReady} bind:medias></MediaChooser>
+							<MediaChooser bind:ready={mediaReady}></MediaChooser>
 						{:else if !roomReady}
 							<RoomChooser bind:room bind:roomReady></RoomChooser>
 						{:else}
-							<Room room={room} bind:userStorage comrades={comrades} bind:chatHistory bind:medias bind:muteAudio bind:muteVideo bind:websocket></Room>
+							<Room room={room} bind:userStorage comrades={comrades} bind:muteAudio bind:muteVideo bind:websocket></Room>
 						{/if}
 					{/if}
 				{/if}

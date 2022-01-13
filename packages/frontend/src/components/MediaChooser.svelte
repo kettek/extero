@@ -2,9 +2,8 @@
   import { onMount } from 'svelte'
 
 	import { v4 } from 'uuid'
-  import type { Media } from "../media"
+  import { mediaStore } from '../stores/media'
 
-  export let medias: Media[] = []
   export let ready: boolean = false
   export let pending: string = ''
   export let error: string = ''
@@ -14,20 +13,19 @@
   $: videoDevices = devices.filter(v=>v.kind==='videoinput')
 
   function addMediaSource() {
-    medias.push({
+    mediaStore.push({
       mediaType: 'unknown',
       uuid: v4(),
       stream: undefined,
     })
-    medias = [...medias]
   }
   function removeMediaSource(uuid: string) {
-    medias = medias.filter(v=>v.uuid!==uuid)
+    mediaStore.remove(uuid)
   }
 
   async function requestMedia(uuid: string, e: Event) {
     let target = <HTMLSelectElement>(e.target)
-    let media = medias.find(v=>v.uuid===uuid)
+    let media = $mediaStore.find(v=>v.uuid===uuid)
     if (!media) return
     if (target.value === media.mediaType) return
     if (target.value === 'camera' || target.value === 'capture' || target.value === 'unknown') {
@@ -51,7 +49,7 @@
   }
 
   async function refreshMedia(uuid: string) {
-    let media = medias.find(v=>v.uuid===uuid)
+    let media = $mediaStore.find(v=>v.uuid===uuid)
     if (!media) return
 
     if (media.mediaType === 'camera') {
@@ -107,7 +105,7 @@
       pending = ''
     }
 
-    medias = [...medias]
+    mediaStore.refresh()
   }
 
   async function requestCapture(uuid: string) {
@@ -131,12 +129,12 @@
 
   onMount(async () => {
     await refreshDevices()
-    medias.push({
+    mediaStore.push({
       mediaType: 'camera',
       uuid: v4(),
       stream: undefined,
     })
-    refreshMedia(medias[0].uuid)
+    refreshMedia($mediaStore[0].uuid)
   })
 </script>
 
@@ -145,7 +143,7 @@
     Select/Add Media Sources
   </header>
   <section>
-    {#each medias as media}
+    {#each $mediaStore as media}
       <article class='media'>
         <aside>
           <select on:change={(e)=>requestMedia(media.uuid, e)} value={media.mediaType}>
