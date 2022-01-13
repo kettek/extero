@@ -131,7 +131,12 @@
 
   onMount(async () => {
     await refreshDevices()
-    addMediaSource()
+    medias.push({
+      mediaType: 'camera',
+      uuid: v4(),
+      stream: undefined,
+    })
+    refreshMedia(medias[0].uuid)
   })
 </script>
 
@@ -143,7 +148,7 @@
     {#each medias as media}
       <article class='media'>
         <aside>
-          <select on:change={(e)=>requestMedia(media.uuid, e)}>
+          <select on:change={(e)=>requestMedia(media.uuid, e)} value={media.mediaType}>
             <option value='unknown'>unknown</option>
             <option value='camera'>camera</option>
             <option value='capture'>capture</option>
