@@ -183,6 +183,64 @@ export function mkPeerImageMessage(image: string): PeerImageMessage {
   }
 }
 
+
+// File Send/Receive
+export interface PeerFileInfo {
+  name: string
+  size: number
+  type: string
+  uuid: string
+}
+
+export interface PeerFile {
+  name: string
+  data: Buffer
+  type: string
+  uuid: string
+}
+
+export interface PeerSendAdvertise {
+  type: 'send-advertise'
+  files: PeerFileInfo[]
+}
+export function isPeerSendAdvertise(o: any): o is PeerSendAdvertise {
+  return o.type === 'send-advertise'
+}
+export function mkPeerSendAdvertise(files: PeerFileInfo[]): PeerSendAdvertise {
+  return {
+    type: 'send-advertise',
+    files,
+  }
+}
+
+export interface PeerSendRequest {
+  type: 'send-request'
+  uuids: string[]
+}
+export function isPeerSendRequest(o: any): o is PeerSendRequest {
+  return o.type === 'send-request'
+}
+export function mkPeerSendRequest(uuids: string[]): PeerSendRequest {
+  return {
+    type: 'send-request',
+    uuids,
+  }
+}
+
+export interface PeerSendResponse {
+  type: 'send-response'
+  files: PeerFile[]
+}
+export function isPeerSendResponse(o: any): o is PeerSendResponse {
+  return o.type === 'send-response'
+}
+export function mkPeerSendResponse(files: PeerFile[]): PeerSendResponse {
+  return {
+    type: 'send-response',
+    files,
+  }
+}
+
 export interface ChatHistory {
   /** Record of the sender of the chat message */
   from: string
