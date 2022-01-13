@@ -36,7 +36,7 @@ function memberJoinRoom(member: any, roomName: string) {
 		room = rooms[rooms.length-1]
 		isNewRoom = true
 	}
-	if (room.members.find(v=>v===member)) {
+	if (room.members.find(v=>v.peerID===member.peerID)) {
 		console.log('member tried to join more than once')
 		return
 	}
