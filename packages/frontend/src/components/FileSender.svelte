@@ -4,7 +4,6 @@
   import type { Comrade } from "../comrade"
   import { v4 } from 'uuid'
   import { Buffer } from 'buffer'
-  import { calculateObjectSize, serialize } from "bson"
 
   import { fileStore, PendingSend } from '../stores/files'
   import { onMount } from "svelte"
@@ -25,8 +24,6 @@
   }, 0)
   $: responseMessage = mkPeerSendResponse($fileStore.assembling)
   $: advertiseMessage = mkPeerSendAdvertise(filesInfo)
-  $: totalMessageSize = calculateObjectSize(responseMessage)
-  $: messageTooLarge = totalMessageSize >= 16*1024*1024
 
   function handleFilePickerClick() {
     let el = document.createElement('input')
@@ -97,7 +94,7 @@
         sent = true
       }
       if (sent) {
-        comrade.dataConnection.send(serialize(advertiseMessage))
+        comrade.dataConnection.send(advertiseMessage)
       }
     }
   }
@@ -117,9 +114,9 @@
       return
     }
     fileStore.updateReceivingStatus(peer, uuid, 'receiving')
-    comrade.dataConnection.send(serialize(
+    comrade.dataConnection.send(
       mkPeerSendRequest([uuid])
-    ))
+    )
   }
   function rejectFile(peer: string, uuid: string) {
     let comrade = comrades.find(v=>v.peerID===peer)
@@ -127,9 +124,9 @@
       fileStore.removeReceiving(peer, uuid)
       return
     }
-    comrade.dataConnection.send(serialize(
+    comrade.dataConnection.send(
       mkPeerSendReject([uuid])
-    ))
+    )
     fileStore.removeReceiving(peer, uuid)
   }
   function acceptAllFiles() {
@@ -141,9 +138,9 @@
       }
       if (recv.status !== 'pending') continue
       recv.status = 'receiving'
-      comrade.dataConnection.send(serialize(
+      comrade.dataConnection.send(
         mkPeerSendRequest([recv.file.uuid])
-      ))
+      )
     }
     fileStore.refresh()
   }
@@ -155,9 +152,9 @@
         continue
       }
       if (recv.status !== 'pending') continue
-      comrade.dataConnection.send(serialize(
+      comrade.dataConnection.send(
         mkPeerSendReject([recv.file.uuid])
-      ))
+      )
     }
     $fileStore.receiving = $fileStore.receiving.filter(v=>v.status!=='pending')
     fileStore.refresh()
@@ -181,12 +178,14 @@
       return
     }
     let blob = new Blob([file.receivedFile.data.buffer])
-    await fileSave(blob, {
-      fileName: file.receivedFile.name,
-      mimeTypes: [
-        file.receivedFile.type,
-      ]
-    })
+    try {
+      await fileSave(blob, {
+        fileName: file.receivedFile.name,
+        id: 'extero',
+      })
+    } catch(err: any) {
+      console.error(err)
+    }
   }
   onMount(() => {
     recipients = comrades.map(v=>v.peerID)
@@ -217,15 +216,11 @@
           </section>
           <section class='filesInfo__totals'>
             <span>
-              Message Size: {(totalMessageSize/1024/1024).toFixed(2)}MB
             </span>
-            {#if messageTooLarge}
-              MESSAGE MUST BE {16}MB or less!
-            {/if}
           </section>
           <section class='toolbar'>
             <button on:click={clearSendFiles}>clear file(s)</button>
-            <button disabled={messageTooLarge} on:click={startSendFiles}>offer file(s)</button>
+            <button on:click={startSendFiles}>offer file(s)</button>
           </section>
         </section>
         <section class='recipients'>

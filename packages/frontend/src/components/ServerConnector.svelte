@@ -2,7 +2,6 @@
   import { onMount } from "svelte"
   import Peer, { DataConnection, MediaConnection } from 'peerjs'
   import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage, mkPeerImageMessage, isPeerImageMessage, isPeerSendAdvertise, isPeerSendRequest, isPeerSendResponse, mkPeerSendResponse, PeerFile, isPeerSendReject } from '@extero/common/dist/src/api'
-  import { serialize, deserialize } from 'bson'
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
 
@@ -42,12 +41,12 @@
     comrades.push(comrade)
     p.on('open', () => {
       console.log('opened peer conn', p)
-      p.send(serialize(mkPeerNameMessage($userStorage.name)))
-      p.send(serialize(mkPeerColorMessage($userStorage.color)))
-      p.send(serialize(mkPeerImageMessage($userStorage.image)))
+      p.send(mkPeerNameMessage($userStorage.name))
+      p.send(mkPeerColorMessage($userStorage.color))
+      p.send(mkPeerImageMessage($userStorage.image))
       // Advertise our current media sources.
       for (let m of medias) {
-        p.send(serialize(mkPeerMediaAdvertise(m.mediaType, m.uuid)))
+        p.send(mkPeerMediaAdvertise(m.mediaType, m.uuid))
       }
     })
     p.on('error', (err: any) => {
@@ -55,8 +54,7 @@
       console.error('lost connection to', p)
       removeComrade(p.peer)
     })
-    p.on('data', (raw: any) => {
-      let data = deserialize(raw)
+    p.on('data', (data: any) => {
       if (isPeerNameMessage(data)) {
         console.log(comrade.name, 'is now', data.name)
         comrade.name = data.name
@@ -77,7 +75,7 @@
       } else if (isPeerMediaAdvertise(data)) {
         console.log('got media advertise', data)
         // TODO: Gauge how much media we want to consume. For now accept all.
-        p.send(serialize(mkPeerMediaRequest(data.uuid)))
+        p.send(mkPeerMediaRequest(data.uuid))
       } else if (isPeerMediaRequest(data)) {
         // find it, yo.
         let media = medias.find(v=>v.uuid===data.uuid)
@@ -140,9 +138,9 @@
           return
         }
         // Begin sending!
-        comrade.dataConnection.send(serialize(
+        comrade.dataConnection.send(
           mkPeerSendResponse(files)
-        ))
+        )
 
         // I guess we can just remove the sending here, since it isn't done w/ streaming. This could be changed if we switch to a chunking model.
         for (let file of files) {
