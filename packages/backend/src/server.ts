@@ -4,7 +4,7 @@ import { ExpressPeerServer } from 'peer'
 import https from 'https'
 import fs from 'fs'
 import { createRoom } from './Room'
-import { isHelloMessage, isLeaveRoomMessage, isJoinRoomMessage, mkMemberJoinMessage, mkJoinRoomMessage, mkMemberLeftMessage, mkHelloMessage } from '@extero/common/dist/src/api'
+import { isHelloMessage, isLeaveRoomMessage, isJoinRoomMessage, mkMemberJoinMessage, mkJoinRoomMessage, mkMemberLeftMessage, mkHelloMessage, mkMemberConnectionMessage } from '@extero/common/dist/src/api'
 
 const app = express()
 const port = 3000
@@ -81,6 +81,17 @@ function memberLeaveRoom(member: any, roomName: string) {
 	))
 }
 
+function memberUpdateConnection(member: any, roomName: string) {
+	let roomIndex = rooms.findIndex(v=>v.name === roomName)
+	if (roomIndex === -1) return
+	let room = rooms[roomIndex]
+
+	let msg = mkMemberConnectionMessage(roomName, member.peerID, member.mightBeLost?'purgatory':'alive')
+	for (let m of room.members.filter(v=>v.peerID!==member.peerID)) {
+		m.ws.send(JSON.stringify(msg))
+	}
+}
+
 const wss = new WebSocket.Server({ server: roomServer })
 
 wss.on('connection', ws => {
@@ -88,7 +99,31 @@ wss.on('connection', ws => {
 		peerID: '',
 		ws,
 		room: '',
+		lastPong: 0,
+		mightBeLost: true,
 	}
+
+	// Set up heartbeat to detect badly closed connections.
+	ws.on('pong', () => {
+		if (member.mightBeLost) {
+			member.mightBeLost = false
+			memberUpdateConnection(member, member.room)
+		}
+		member.lastPong = performance.now()
+	})
+	const hbInterval = setInterval(() => {
+		let timeSinceLastPong = performance.now() - member.lastPong
+		if (timeSinceLastPong >= 30000) { // Kick after 30 seconds.
+		  return ws.terminate()
+		}
+		if (!member.mightBeLost && timeSinceLastPong >= 5000) { // Notify members of possible d/c after 5 seconds.
+			member.mightBeLost = true
+			memberUpdateConnection(member, member.room)
+		}
+
+		ws.ping()
+	}, 5000)
+
 	ws.on('message', (data: WebSocket.Data) => {
 		let msg = JSON.parse(data.toString())
 		if (isHelloMessage(msg)) {
@@ -108,6 +143,7 @@ wss.on('connection', ws => {
 		}
 	})
 	ws.on('close', () => {
+		clearInterval(hbInterval)
 		memberLeaveRoom(member, member.room)
 	})
 
