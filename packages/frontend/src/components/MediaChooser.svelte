@@ -10,7 +10,7 @@
   export let error: string = ''
 
   let devices: MediaDeviceInfo[] = []
-  $: audioInputDevices = devices.filter(v=>v.kind==='audioinput')
+  $: audioDevices = devices.filter(v=>v.kind==='audioinput')
   $: videoDevices = devices.filter(v=>v.kind==='videoinput')
 
   function addMediaSource() {
@@ -69,15 +69,23 @@
           height: media.height,
           frameRate: media.framerate,
         }
+        let audioConstraints: MediaTrackConstraints = {
+        }
         if (media.facing) {
           videoConstraints.facingMode = media.facing
         }
-        if (media.device) {
-          videoConstraints.deviceId = { exact: media.device }
+        if (media.videoDevice) {
+          videoConstraints.deviceId = { exact: media.videoDevice }
+        }
+        if (media.audioDevice) {
+          audioConstraints.deviceId = { exact: media.audioDevice }
+        }
+        if (media.noiseSuppression) {
+          audioConstraints.noiseSuppression = true
         }
         media.stream = await navigator.mediaDevices.getUserMedia({
           video: videoConstraints,
-          audio: true,
+          audio: audioConstraints,
         })
       } catch(err: any) {
         error = err
@@ -142,7 +150,7 @@
           </select>
           {#if media.mediaType === 'camera'}
             <aside>Select a video source</aside>
-            <select bind:value={media.device} on:change={()=>refreshMedia(media.uuid)}>
+            <select bind:value={media.videoDevice} on:change={()=>refreshMedia(media.uuid)}>
               <option value=''>Default</option>
               {#each videoDevices as videoDevice}
                 <option value={videoDevice.deviceId}>{videoDevice.label}</option>
@@ -170,6 +178,17 @@
                 <option value='user'>User/Front</option>
                 <option value='environment'>Environment/Back</option>
               </select>
+            </label>
+            <aside>Select an audio source</aside>
+            <select bind:value={media.audioDevice} on:change={()=>refreshMedia(media.uuid)}>
+              <option value=''>Default</option>
+              {#each audioDevices as audioDevice}
+                <option value={audioDevice.deviceId}>{audioDevice.label}</option>
+              {/each}
+            </select>
+            <label>
+              <span>Noise Suppression</span>
+              <input type='checkbox' bind:checked={media.noiseSuppression} on:change={()=>refreshMedia(media.uuid)}>
             </label>
           {:else if media.mediaType === 'capture'}
             <button on:click={()=>requestCapture(media.uuid)}>reacquire</button>

@@ -4,7 +4,9 @@ export interface Media {
   mediaType: MediaType
   uuid: string
   stream: MediaStream
-  device?: string
+  videoDevice?: string
+  audioDevice?: string
+  noiseSuppression?: boolean
   width?: number
   height?: number
   framerate?: number
