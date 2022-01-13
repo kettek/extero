@@ -339,7 +339,8 @@
   }
   .chat-input {
     display: grid;
-    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: 100%;
   }
   video {
     width: 100%;
