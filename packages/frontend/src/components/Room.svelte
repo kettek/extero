@@ -5,6 +5,7 @@
   import type { Comrade } from "../comrade"
   import ComradeView from "./ComradeView.svelte"
   import SplitPane from "./SplitPane.svelte"
+  import FileSender from "./FileSender.svelte"
   import type { Media } from "../media"
 
   import type { UserI } from "../types/user"
@@ -13,6 +14,7 @@
   import { toMarkdown } from '../markdown'
   import { playSound } from "../sounds"
   import { onMount } from "svelte"
+import Window from "./Window.svelte"
 
   export let websocket: WebSocket
 
@@ -23,6 +25,7 @@
   export let chatHistory: ChatHistory[]
   export let muteAudio: boolean
   export let muteVideo: boolean
+  let sendFiles: boolean = false
 
   $: gridCols = `repeat(${1+Math.floor(comrades.length/2)}, minmax(0, 1fr))`
   $: gridRows = `repeat(${Math.ceil(comrades.length/2)}, minmax(0, 1fr))`
@@ -223,6 +226,9 @@
             </div>
           </div>
         {/each}
+        <div class='comrade-chat-options'>
+          <button on:click={()=>{sendFiles = true}}>send files</button>
+        </div>
       </section>
       <section class='chat'>
         {#each chatHistory as chat}
@@ -250,6 +256,12 @@
     </section>
   </SplitPane>
 </main>
+{#if sendFiles}
+<Window>
+  <FileSender comrades={comrades}></FileSender>
+  <button on:click={()=>{sendFiles=false}}>close</button>
+</Window>
+{/if}
 
 <style>
   main {

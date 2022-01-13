@@ -1,7 +1,7 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import Peer, { DataConnection, MediaConnection } from 'peerjs'
-  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage, mkPeerImageMessage, isPeerImageMessage } from '@extero/common/dist/src/api'
+  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage, mkPeerImageMessage, isPeerImageMessage, isPeerSendAdvertise, isPeerSendRequest, isPeerSendResponse } from '@extero/common/dist/src/api'
   import { serialize, deserialize } from 'bson'
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
@@ -111,6 +111,12 @@
           comrade.outboundMedias = comrade.outboundMedias.filter(v=>v.uuid===data.uuid)
           refreshComrades()
         })
+      } else if (isPeerSendAdvertise(data)) {
+        // TODO: Show file send advertisement graphically -- perhaps via a store?
+      } else if (isPeerSendRequest(data)) {
+        // TODO: Check our pending file sends list and if we have sent this specific file advertisement to the given comrade, make and send the file message.
+      } else if (isPeerSendResponse(data)) {
+        // TODO: Show a prompt to save the file(s) to a directory.
       }
       console.log('got peer data', data)
       refreshComrades()
@@ -207,11 +213,12 @@
       await new Promise((resolve: (value: void) => void, reject: (reason: any) => void) => {
         websocket = new WebSocket(`wss://${parsedUrl.hostname}:3001`)
         websocket.onerror = (event: Event) => {
+          console.error(event)
           reject(event)
         }
         websocket.onclose = (event: CloseEvent) => {
           websocket = undefined
-          console.log('got close')
+          console.log('got close', event)
           ready = false
           // TODO: reconnect?
         }
