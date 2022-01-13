@@ -99,7 +99,7 @@ wss.on('connection', ws => {
 		peerID: '',
 		ws,
 		room: '',
-		lastPong: 0,
+		lastPong: perfomrance.now(),
 		mightBeLost: true,
 	}
 
