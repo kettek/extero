@@ -10,7 +10,11 @@
     "packages/frontend"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -b",
+    "build-backend": "tsc -b packages/backend",
+    "build-frontend": "tsc -b packages/frontend",
+    "build-common": "tsc -b packages/common"
   },
   "keywords": [],
   "author": "Ketchetwahmeegwun T. Southall",
