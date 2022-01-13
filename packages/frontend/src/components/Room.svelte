@@ -30,6 +30,29 @@
   $: gridRows = `repeat(${Math.ceil(comrades.length/2)}, minmax(0, 1fr))`
 
   let pendingChatInput: string = ''
+  let chatElement: HTMLElement
+
+  let scrollTimeout: number
+  let isScrolling: boolean = false
+  $: {
+    if ($chatStore && chatElement) {
+      if (isScrolling || chatElement.scrollHeight - chatElement.scrollTop - chatElement.clientHeight < 20) {
+        isScrolling = true
+        if (scrollTimeout) {
+          window.clearTimeout(scrollTimeout)
+        }
+        scrollTimeout = window.setTimeout(() => {
+          isScrolling = false
+        }, 200)
+        window.setTimeout(() => {
+          chatElement.scrollTo({
+            top: chatElement.scrollHeight,
+            behavior: 'smooth',
+          })
+        }, 0)
+      }
+    }
+  }
 
   function onChatInputKeyUp(e: KeyboardEvent) {
     if (e.code === 'Enter') {
@@ -228,7 +251,7 @@
           <button on:click={()=>{sendFiles = true}}>send files</button>
         </div>
       </section>
-      <section class='chat'>
+      <section class='chat' bind:this={chatElement}>
         {#each $chatStore as chat}
           <div class='chat-message'>
             <div style="color: {findComradeColorFromName(chat.from)}" class='chat-message-from'>
