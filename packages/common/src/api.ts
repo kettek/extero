@@ -76,6 +76,24 @@ export function mkMemberLeftMessage(room: string, peerID: string): MemberLeftMes
   }
 }
 
+export interface MemberConnectionMessage {
+  type: 'member-connection'
+  room: string
+  peerID: string
+  state: 'alive' | 'purgatory'
+}
+export function isMemberConnectionMessage(o: any): o is MemberConnectionMessage {
+  return o.type === 'member-connection'
+}
+export function mkMemberConnectionMessage(room: string, peerID: string, state: 'alive'|'purgatory'): MemberConnectionMessage {
+  return {
+    type: 'member-connection',
+    room,
+    peerID,
+    state,
+  }
+}
+
 export type MediaType = 'unknown' | 'camera' | 'capture'
 
 /* Peer Messages */
