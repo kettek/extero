@@ -7,6 +7,7 @@
   let pendingRequest: boolean = true
   let storageAllowed: boolean = false
   let persistentStorage: boolean = false
+  let error: string = ''
 
   function storageAvailable(type: string): boolean {
     let storage: Storage = null
@@ -36,7 +37,11 @@
   onMount(async () => {
     storageAllowed = storageAvailable('localStorage')
     if (storageAllowed) {
-      persistentStorage = await navigator.storage.persist()
+      try {
+        persistentStorage = await navigator.storage.persist()
+      } catch(err: any) {
+        error = err
+      }
     }
 
     console.log('got storage', storageAllowed, persistentStorage)
@@ -61,6 +66,9 @@
         Storage denied, user and room settings will not be persistent.
         <button on:click={()=>{ready=true}}>okay</button>
       {/if}
+    {/if}
+    {#if error}
+      <span>{error}</span>
     {/if}
   </section>
 </main>
