@@ -12,12 +12,12 @@
 
   import type { UserI } from "../types/user"
   import type { Store } from "../stores/localStore"
+  import { chatStore } from "../stores/chat"
 
   export let peerID: string
   export let localPeer: Peer
   export let comrades: Comrade[] = []
   export let medias: Media[] = []
-  export let chatHistory: ChatHistory[] = []
   export let userStorage: Store<UserI>
 
   function refreshComrades() {
@@ -64,13 +64,12 @@
       } else if (isPeerImageMessage(data)) {
         comrade.image = data.image
       } else if (isPeerChatMessage(data)) {
-        chatHistory.push({
+        chatStore.push({
           from: comrade.name,
           content: data.content,
           renderedContent: toMarkdown(data.content),
           timestamp: new Date(),
         })
-        chatHistory = [...chatHistory]
         playSound('chat')
       } else if (isPeerMediaAdvertise(data)) {
         console.log('got media advertise', data)

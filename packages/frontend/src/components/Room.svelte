@@ -13,7 +13,8 @@
   import { toMarkdown } from '../markdown'
   import { playSound } from "../sounds"
   import { onMount } from "svelte"
-import Window from "./Window.svelte"
+  import Window from "./Window.svelte"
+  import { chatStore } from "../stores/chat"
 
   export let websocket: WebSocket
 
@@ -21,7 +22,6 @@ import Window from "./Window.svelte"
   export let room: string
   export let comrades: Comrade[]
   export let userStorage: Store<UserI>
-  export let chatHistory: ChatHistory[]
   export let muteAudio: boolean
   export let muteVideo: boolean
   let sendFiles: boolean = false
@@ -44,13 +44,12 @@ import Window from "./Window.svelte"
     }
 
     // Also add it to our own chat history.
-    chatHistory.push({
+    chatStore.push({
       from: $userStorage.name,
       content: pendingChatInput,
       renderedContent: toMarkdown(pendingChatInput),
       timestamp: new Date(),
     })
-    chatHistory = [...chatHistory]
     playSound('chat')
 
     pendingChatInput = ''
@@ -230,7 +229,7 @@ import Window from "./Window.svelte"
         </div>
       </section>
       <section class='chat'>
-        {#each chatHistory as chat}
+        {#each $chatStore as chat}
           <div class='chat-message'>
             <div style="color: {findComradeColorFromName(chat.from)}" class='chat-message-from'>
               {chat.from}
