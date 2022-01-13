@@ -24,6 +24,10 @@
   }
 
   function addComrade(p: Peer.DataConnection) {
+    if (comrades.find(v=>v.peerID===p.peer)) {
+      console.error(new Error('attempted to add comrade when an existing comrade with the same peer ID exists'))
+      return
+    }
     let comrade: Comrade = {
       name: 'pending comrade',
       peerID: p.peer,
