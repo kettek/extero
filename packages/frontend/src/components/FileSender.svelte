@@ -1,16 +1,20 @@
 <script type='ts'>
-  import { mkPeerSendAdvertise, mkPeerSendResponse } from "@extero/common/dist/src/api"
+  import { mkPeerSendAdvertise, mkPeerSendRequest, mkPeerSendReject,mkPeerSendResponse } from "@extero/common/dist/src/api"
   import type { PeerFile, PeerFileInfo } from "@extero/common/dist/src/api"
   import type { Comrade } from "../comrade"
   import { v4 } from 'uuid'
   import { Buffer } from 'buffer'
   import { calculateObjectSize, serialize } from "bson"
 
+  import { fileStore, PendingSend } from '../stores/files'
+  import { onMount } from "svelte"
+  import { fileSave } from 'browser-fs-access'
+
   export let comrades: Comrade[]
   let recipients: string[] = []
+  $: comradeRecipients = comrades.filter(v=>recipients.includes(v.peerID))
 
-  let files: PeerFile[] = []
-  $: filesInfo = files.map(v=>({
+  $: filesInfo = $fileStore.assembling.map(v=>({
     name: v.name,
     size: v.data.length,
     type: v.type,
@@ -19,7 +23,7 @@
   $: totalByteSize = filesInfo.reduce((p,v) => {
     return p + v.size
   }, 0)
-  $: responseMessage = mkPeerSendResponse(files)
+  $: responseMessage = mkPeerSendResponse($fileStore.assembling)
   $: advertiseMessage = mkPeerSendAdvertise(filesInfo)
   $: totalMessageSize = calculateObjectSize(responseMessage)
   $: messageTooLarge = totalMessageSize >= 16*1024*1024
@@ -27,6 +31,7 @@
   function handleFilePickerClick() {
     let el = document.createElement('input')
     el.setAttribute('type', 'file')
+    el.setAttribute('multiple', 'true')
 
     el.addEventListener('change', (ev: InputEvent) => {
       for (let file of el.files) {
@@ -55,19 +60,15 @@
     console.log(file)
     let arrayBuffer = await file.arrayBuffer()
     let buffer = Buffer.from(arrayBuffer)
-    files = [
-      ...files,
-      {
-        name: file.name,
-        type: file.type,
-        data: buffer,
-        uuid: v4(),
-      }
-    ]
-    //let msg =  mkPeerSendAdvertise()
+    fileStore.addAssembling({
+      name: file.name,
+      type: file.type,
+      data: buffer,
+      uuid: v4(),
+    })
   }
-  function removeFile(index: number) {
-    files = files.filter((_,i)=>index!==i)
+  function removeFile(uuid: string) {
+    fileStore.removeAssembling(uuid)
   }
 
   function changeRecipientStatus(peerID: string, ev: InputEvent) {
@@ -80,11 +81,116 @@
     }
   }
 
-  function sendFiles() {
-    for (let comrade of comrades) {
-      comrade.dataConnection.send(serialize(advertiseMessage))
+  function clearSendFiles() {
+    fileStore.clearAssembling()
+  }
+  function startSendFiles() {
+    for (let comrade of comradeRecipients) {
+      let sent = false
+      for (let file of $fileStore.assembling) {
+        let pendingSend: PendingSend = {
+          peerID: comrade.peerID,
+          file,
+          status: 'pending',
+        }
+        fileStore.addSending(pendingSend)
+        sent = true
+      }
+      if (sent) {
+        comrade.dataConnection.send(serialize(advertiseMessage))
+      }
     }
   }
+  function removeSendingFile(peer: string, uuid: string) {
+    // TODO: Send a revoke message
+    fileStore.removeSending(peer, uuid)
+  }
+  function revokeAllFiles() {
+    // TODO: Send revoke messages to targets.
+    $fileStore.sending = []
+    fileStore.refresh()
+  }
+  function acceptFile(peer: string, uuid: string) {
+    let comrade = comrades.find(v=>v.peerID===peer)
+    if (!comrade) {
+      fileStore.removeReceiving(peer, uuid)
+      return
+    }
+    fileStore.updateReceivingStatus(peer, uuid, 'receiving')
+    comrade.dataConnection.send(serialize(
+      mkPeerSendRequest([uuid])
+    ))
+  }
+  function rejectFile(peer: string, uuid: string) {
+    let comrade = comrades.find(v=>v.peerID===peer)
+    if (!comrade) {
+      fileStore.removeReceiving(peer, uuid)
+      return
+    }
+    comrade.dataConnection.send(serialize(
+      mkPeerSendReject([uuid])
+    ))
+    fileStore.removeReceiving(peer, uuid)
+  }
+  function acceptAllFiles() {
+    for (let recv of $fileStore.receiving) {
+      let comrade = comrades.find(v=>v.peerID===recv.peerID)
+      if (!comrade) {
+        fileStore.removeReceiving(recv.peerID, recv.file.uuid)
+        continue
+      }
+      if (recv.status !== 'pending') continue
+      recv.status = 'receiving'
+      comrade.dataConnection.send(serialize(
+        mkPeerSendRequest([recv.file.uuid])
+      ))
+    }
+    fileStore.refresh()
+  }
+  function rejectAllFiles() {
+    for (let recv of $fileStore.receiving) {
+      let comrade = comrades.find(v=>v.peerID===recv.peerID)
+      if (!comrade) {
+        fileStore.removeReceiving(recv.peerID, recv.file.uuid)
+        continue
+      }
+      if (recv.status !== 'pending') continue
+      comrade.dataConnection.send(serialize(
+        mkPeerSendReject([recv.file.uuid])
+      ))
+    }
+    $fileStore.receiving = $fileStore.receiving.filter(v=>v.status!=='pending')
+    fileStore.refresh()
+  }
+  function clearAllFiles() {
+    rejectAllFiles()
+    $fileStore.receiving = []
+    fileStore.refresh()
+  }
+  function clearFile(peer: string, uuid: string) {
+    fileStore.removeReceiving(peer, uuid)
+  }
+  async function saveFile(peer: string, uuid: string) {
+    let file = $fileStore.receiving.find(v=>v.peerID===peer&&v.file.uuid===uuid)
+    if (!file) {
+      console.error(new Error("no file exists to save"))
+      return
+    }
+    if (!file.receivedFile) {
+      console.error(new Error("no receivedFile to save"))
+      return
+    }
+    let blob = new Blob([file.receivedFile.data.buffer])
+    await fileSave(blob, {
+      fileName: file.receivedFile.name,
+      mimeTypes: [
+        file.receivedFile.type,
+      ]
+    })
+  }
+  onMount(() => {
+    recipients = comrades.map(v=>v.peerID)
+  })
 </script>
 
 <main>
@@ -95,37 +201,93 @@
       </span>
     </section>
     <section class='filesInfo'>
-      <section class='filesInfo__list'>
-        {#each files as file, fileIndex}
-          <div class='file'>
-            <span>{file.name}</span>
-            <span>{(file.data.length/1024/1024).toFixed(2)}MB</span>
+      <section class='filesInfo__assembling'>
+        <section class='filesInfo__assembling__content'>
+          <header>Assembling</header>
+          <section class='filesInfo__list'>
+            {#each $fileStore.assembling as file}
+              <div class='file'>
+                <span>{file.name}</span>
+                <span>{(file.data.length/1024/1024).toFixed(2)}MB</span>
+                <span>
+                  <button on:click={()=>removeFile(file.uuid)}>remove</button>
+                </span>
+              </div>
+            {/each}
+          </section>
+          <section class='filesInfo__totals'>
             <span>
-              <button on:click={()=>removeFile(fileIndex)}>remove</button>
+              Message Size: {(totalMessageSize/1024/1024).toFixed(2)}MB
             </span>
-          </div>
-        {/each}
+            {#if messageTooLarge}
+              MESSAGE MUST BE {16}MB or less!
+            {/if}
+          </section>
+          <section class='toolbar'>
+            <button on:click={clearSendFiles}>clear file(s)</button>
+            <button disabled={messageTooLarge} on:click={startSendFiles}>offer file(s)</button>
+          </section>
+        </section>
+        <section class='recipients'>
+          <header>Recipients</header>
+          <section class='recipients__list'>
+            {#each comrades as comrade}
+              <div>
+                <span>{comrade.name}</span>
+                <input type='checkbox' checked={recipients.includes(comrade.peerID)} on:change={(e)=>changeRecipientStatus(comrade.peerID, e)}>
+              </div>
+            {/each}
+          </section>
+        </section>
       </section>
-      <section class='filesInfo__totals'>
-        <span>
-          Message Size: {(totalMessageSize/1024/1024).toFixed(2)}MB
-        </span>
-        {#if messageTooLarge}
-          MESSAGE MUST BE {16}MB or less!
-        {/if}
+      <section class='filesInfo__sending'>
+        <header>Sending</header>
+        <section class='filesInfo__list'>
+          {#each $fileStore.sending as send}
+            <div class='file -send'>
+              <span>{send.file.name}</span>
+              <span>{(send.file.data.length/1024/1024).toFixed(2)}MB</span>
+              <span> ➡ {comrades.find(v=>v.peerID===send.peerID)?.name}</span>
+              <span>
+                <button on:click={()=>removeSendingFile(send.peerID, send.file.uuid)}>revoke</button>
+              </span>
+            </div>
+          {/each}
+        </section>
+        <section class='toolbar'>
+          <button on:click={revokeAllFiles}>revoke all</button>
+        </section>
+      </section>
+      <section class='filesInfo__receiving'>
+        <header>Received</header>
+        <section class='filesInfo__list'>
+          {#each $fileStore.receiving as recv}
+            <div class='file -receive'>
+              <span>{comrades.find(v=>v.peerID===recv.peerID)?.name} ➡ </span>
+              <span>{recv.file.name}</span>
+              <span>{(recv.file.size/1024/1024).toFixed(2)}MB</span>
+              <span>
+                {#if recv.status==='receiving'}
+                  <span>...</span>
+                  <button on:click={()=>clearFile(recv.peerID, recv.file.uuid)}>clear</button>
+                {:else if recv.status==='received'}
+                  <button on:click={()=>saveFile(recv.peerID, recv.file.uuid)}>save</button>
+                  <button on:click={()=>clearFile(recv.peerID, recv.file.uuid)}>clear</button>
+                {:else}
+                  <button on:click={()=>acceptFile(recv.peerID, recv.file.uuid)}>accept</button>
+                  <button on:click={()=>rejectFile(recv.peerID, recv.file.uuid)}>reject</button>
+                {/if}
+              </span>
+            </div>
+          {/each}
+        </section>
+        <section class='toolbar'>
+          <button on:click={acceptAllFiles}>accept all</button>
+          <button on:click={rejectAllFiles}>reject all</button>
+          <button on:click={clearAllFiles}>clear all</button>
+        </section>
       </section>
     </section>
-    <section class='toolbar'>
-      <button disabled={messageTooLarge} on:click={sendFiles}>send file(s)</button>
-    </section>
-  </section>
-  <section class='recipients'>
-    {#each comrades as comrade}
-      <div>
-        <span>{comrade.name}</span>
-        <input type='checkbox' checked={recipients.includes(comrade.peerID)} on:change={(e)=>changeRecipientStatus(comrade.peerID, e)}>
-      </div>
-    {/each}
   </section>
 </main>
 
@@ -142,19 +304,45 @@
   }
   .filesInfo {
     display: grid;
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   }
   .filesInfo__list {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
   }
+  .filesInfo__assembling {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .filesInfo__assembling__content {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+  }
+  .filesInfo__sending {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .filesInfo__receiving {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
   .file {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
   }
+  .file.-send {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+  }
+  .file.-receive {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+  }
   .toolbar {
   }
   .recipients {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .recipients__list {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
   }

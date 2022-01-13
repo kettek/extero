@@ -227,6 +227,20 @@ export function mkPeerSendRequest(uuids: string[]): PeerSendRequest {
   }
 }
 
+export interface PeerSendReject {
+  type: 'send-reject'
+  uuids: string[]
+}
+export function isPeerSendReject(o: any): o is PeerSendReject {
+  return o.type === 'send-reject'
+}
+export function mkPeerSendReject(uuids: string[]): PeerSendReject {
+  return {
+    type: 'send-reject',
+    uuids,
+  }
+}
+
 export interface PeerSendResponse {
   type: 'send-response'
   files: PeerFile[]

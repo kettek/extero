@@ -1,10 +1,12 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import Peer, { DataConnection, MediaConnection } from 'peerjs'
-  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage, mkPeerImageMessage, isPeerImageMessage, isPeerSendAdvertise, isPeerSendRequest, isPeerSendResponse } from '@extero/common/dist/src/api'
+  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage, mkPeerImageMessage, isPeerImageMessage, isPeerSendAdvertise, isPeerSendRequest, isPeerSendResponse, mkPeerSendResponse, PeerFile, isPeerSendReject } from '@extero/common/dist/src/api'
   import { serialize, deserialize } from 'bson'
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
+
+  import { fileStore, PendingSend } from "../stores/files"
 
   import { toMarkdown } from '../markdown'
   import { playSound } from '../sounds'
@@ -112,11 +114,53 @@
           refreshComrades()
         })
       } else if (isPeerSendAdvertise(data)) {
-        // TODO: Show file send advertisement graphically -- perhaps via a store?
+        // Add advertised files to our receiving file store.
+        for (let file of data.files) {
+          console.log('adding receiving', file)
+          fileStore.addReceiving({
+            peerID: comrade.peerID,
+            file,
+            status: 'pending',
+          })
+        }
+      } else if (isPeerSendReject(data)) {
+        for (let uuid of data.uuids) {
+          fileStore.removeSending(comrade.peerID, uuid)
+        }
       } else if (isPeerSendRequest(data)) {
-        // TODO: Check our pending file sends list and if we have sent this specific file advertisement to the given comrade, make and send the file message.
+        let files: PeerFile[] = []
+        for (let uuid of data.uuids) {
+          let match = $fileStore.sending.find(v=>v.file.uuid===uuid&&v.status==='pending'&&v.peerID===comrade.peerID)
+          if (!match) continue
+          match.status = 'sending'
+          files.push(match.file)
+        }
+        if (files.length === 0) {
+          console.error('request for 0 valid file offers!')
+          return
+        }
+        // Begin sending!
+        comrade.dataConnection.send(serialize(
+          mkPeerSendResponse(files)
+        ))
+
+        // I guess we can just remove the sending here, since it isn't done w/ streaming. This could be changed if we switch to a chunking model.
+        for (let file of files) {
+          let match = $fileStore.sending.find(v=>v.file.uuid===file.uuid&&v.status==='sending'&&v.peerID===comrade.peerID)
+          if (!match) continue
+          match.status = 'sent'
+        }
+        fileStore.clearSent()
       } else if (isPeerSendResponse(data)) {
-        // TODO: Show a prompt to save the file(s) to a directory.
+        for (let file of data.files) {
+          let fsFile = $fileStore.receiving.find(v=>v.file.uuid === file.uuid&&v.peerID===comrade.peerID)
+          if (!fsFile) {
+            console.error('comrade is sending is a file we did not request')
+            continue
+          }
+          fsFile.receivedFile = file
+          fileStore.updateReceivingStatus(comrade.peerID, file.uuid, 'received')
+        }
       }
       console.log('got peer data', data)
       refreshComrades()
