@@ -34,6 +34,7 @@
     "typescript": "^4.0.0"
   },
   "dependencies": {
+    "browser-fs-access": "^0.24.0",
     "dexie": "^3.2.0",
     "dexie-observable": "^3.0.0-beta.11",
     "eventemitter3": "^4.0.7",
