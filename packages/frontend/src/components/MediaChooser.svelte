@@ -336,7 +336,7 @@
     color: red;
   }
   input[type=number] {
-    width: 5em;
+    width: 6em;
   }
   select {
     width: 30ch;
