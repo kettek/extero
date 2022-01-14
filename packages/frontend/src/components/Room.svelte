@@ -201,6 +201,7 @@
       {/each}
     </section>
     <section slot='b' class='soapbox'>
+      <header>extero</header>
       <section class='settings'>
         <nav>
           <button class:muted={muteAudio} on:click={toggleAudio}>{muteAudio?'un':''}mute audio</button>
@@ -363,7 +364,13 @@
   }
   .soapbox {
     display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  }
+  .soapbox > header {
+		text-align: center;
+		font-size: 200%;
+		font-weight: 600;
+		background: #111;
   }
   .chat-input {
     display: grid;

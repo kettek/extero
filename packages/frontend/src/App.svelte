@@ -80,7 +80,11 @@
 		</section>
 	{:else}
 		<section class:roomReady>
-			<header>extero</header>
+			<header>
+				{#if !roomReady}
+					extero
+				{/if}
+			</header>
 			<article class:roomReady>
 				{#if !storageReady}
 					<StorageInitializer bind:ready={storageReady}></StorageInitializer>
