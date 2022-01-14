@@ -16,6 +16,7 @@
   import { onMount } from "svelte"
   import Window from "./Window.svelte"
   import { chatStore } from "../stores/chat"
+  import SelfView from "./SelfView.svelte"
 
   export let websocket: WebSocket
 
@@ -207,13 +208,7 @@
           <button on:click={leaveRoom}>leave</button>
         </nav>
         <section class='self-video'>
-          {#each $mediaStore as media}
-            {#if media.stream}
-              <video use:srcObject={media.stream} autoplay playsinline muted>
-                <track kind='captions'>
-              </video>
-            {/if}
-          {/each}
+          <SelfView></SelfView>
         </section>
       </section>
       <section class='comrades'>
