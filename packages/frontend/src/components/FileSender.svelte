@@ -194,44 +194,47 @@
 
 <main>
   <section class='files'>
-    <section class='filePicker' on:click={handleFilePickerClick} on:drop={handleFilePickerDrop} ondragover={handleFilePickerDragOver}>
-      <span>
-        Drop or click here to select a file.
-      </span>
-    </section>
     <section class='filesInfo'>
       <section class='filesInfo__assembling'>
-        <section class='filesInfo__assembling__content'>
-          <header>Assembling</header>
-          <section class='filesInfo__list'>
-            {#each $fileStore.assembling as file}
-              <div class='file'>
-                <span>{file.name}</span>
-                <span>{(file.data.length/1024/1024).toFixed(2)}MB</span>
-                <span>
-                  <button on:click={()=>removeFile(file.uuid)}>remove</button>
-                </span>
-              </div>
-            {/each}
-          </section>
-          <section class='filesInfo__totals'>
-            <span>
-            </span>
-          </section>
-          <section class='toolbar'>
-            <button on:click={clearSendFiles}>clear file(s)</button>
-            <button on:click={startSendFiles}>offer file(s)</button>
-          </section>
+        <section class='filePicker' on:click={handleFilePickerClick} on:drop={handleFilePickerDrop} ondragover={handleFilePickerDragOver}>
+          <span>
+            Drop or click here to select a file.
+          </span>
+          <span class='filePicker__dropper'></span>
         </section>
-        <section class='recipients'>
-          <header>Recipients</header>
-          <section class='recipients__list'>
-            {#each comrades as comrade}
-              <div>
-                <span>{comrade.name}</span>
-                <input type='checkbox' checked={recipients.includes(comrade.peerID)} on:change={(e)=>changeRecipientStatus(comrade.peerID, e)}>
-              </div>
-            {/each}
+        <section class='filesInfo__assembling__meta'>
+          <section class='filesInfo__assembling__content'>
+            <header>Assembling</header>
+            <section class='filesInfo__list'>
+              {#each $fileStore.assembling as file}
+                <div class='file'>
+                  <span>{file.name}</span>
+                  <span>{(file.data.length/1024/1024).toFixed(2)}MB</span>
+                  <span>
+                    <button on:click={()=>removeFile(file.uuid)}>remove</button>
+                  </span>
+                </div>
+              {/each}
+            </section>
+            <section class='filesInfo__totals'>
+              <span>
+              </span>
+            </section>
+            <section class='toolbar'>
+              <button on:click={clearSendFiles}>clear file(s)</button>
+              <button on:click={startSendFiles}>offer file(s)</button>
+            </section>
+          </section>
+          <section class='recipients'>
+            <header>Recipients</header>
+            <section class='recipients__list'>
+              {#each comrades as comrade}
+                <div>
+                  <span>{comrade.name}</span>
+                  <input type='checkbox' checked={recipients.includes(comrade.peerID)} on:change={(e)=>changeRecipientStatus(comrade.peerID, e)}>
+                </div>
+              {/each}
+            </section>
           </section>
         </section>
       </section>
@@ -296,6 +299,11 @@
     grid-template-rows: minmax(0, 1fr) auto auto;
   }
   .filePicker {
+    min-height: 8em;
+  }
+  .filePicker__dropper {
+    font-size: 300%;
+    color: rgb(64, 64, 64);
   }
   .filesInfo {
     display: grid;
@@ -304,10 +312,20 @@
   .filesInfo__list {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    background: rgb(32, 32, 32);
+    margin: .5em;
+    padding: .5em;
   }
   .filesInfo__assembling {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    background: rgb(32, 32, 32);
+    margin: .5em;
+    padding: .5em;
+  }
+  .filesInfo__assembling__meta {
+    display: grid;
+    grid-template-columns: auto minmax(8em, 1fr);
   }
   .filesInfo__assembling__content {
     display: grid;
@@ -316,10 +334,16 @@
   .filesInfo__sending {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
+    background: rgb(32, 32, 32);
+    margin: .5em;
+    padding: .5em;
   }
   .filesInfo__receiving {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
+    background: rgb(32, 32, 32);
+    margin: .5em;
+    padding: .5em;
   }
   .file {
     display: grid;
