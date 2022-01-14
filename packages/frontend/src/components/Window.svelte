@@ -15,6 +15,7 @@
     display: grid;
     justify-content: center;
     align-content: center;
+    z-index: 100;
   }
   section {
     min-width: 50%;
