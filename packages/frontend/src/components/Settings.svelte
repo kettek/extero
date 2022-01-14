@@ -10,6 +10,7 @@
     </label>
     <label>
       <span>Sound Volume</span>
+      <input type='range' min=0 max=200 bind:value={$settingsStore.soundEffectsVolume}>
       <input type='number' min=0 max=200 bind:value={$settingsStore.soundEffectsVolume}>
     </label>
   </section>
@@ -26,5 +27,8 @@
   section.group {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+  }
+  input[type=number] {
+    width: 5em;
   }
 </style>
