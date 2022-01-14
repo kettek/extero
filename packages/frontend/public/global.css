@@ -8,3 +8,23 @@ html, body {
 	height: 100%;
 	margin: 0;
 }
+
+button {
+	background: rgb(64, 64, 64);
+	color: #fff;
+	border: 0;
+	margin: .5em;
+	padding: .5em;
+	cursor: pointer;
+	border-radius: .75em .75em .5em .5em;
+}
+
+input, select {
+	background: rgb(64, 64, 64);
+	color: #fff;
+	border: 0;
+	margin: .5em;
+	padding: .5em;
+	cursor: pointer;
+	border-radius: .5em .75em .75em .5em;
+}
