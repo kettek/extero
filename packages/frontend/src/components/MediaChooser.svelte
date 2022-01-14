@@ -139,68 +139,92 @@
 </script>
 
 <main>
-  <header>
-    Select/Add Media Sources
-  </header>
-  <section>
+  <section class='container'>
     {#each $mediaStore as media}
-      <article class='media'>
+      <section class='media'>
         <aside>
-          <select on:change={(e)=>requestMedia(media.uuid, e)} value={media.mediaType}>
-            <option value='unknown'>unknown</option>
-            <option value='camera'>camera</option>
-            <option value='capture'>capture</option>
-          </select>
-          {#if media.mediaType === 'camera'}
-            <aside>Select a video source</aside>
-            <select bind:value={media.videoDevice} on:change={()=>refreshMedia(media.uuid)}>
-              <option value=''>Default</option>
-              {#each videoDevices as videoDevice}
-                <option value={videoDevice.deviceId}>{videoDevice.label}</option>
-              {/each}
-            </select>
-            <aside>
-              Preferred resolution and framerate
-            </aside>
-            <label>
-              <span>Width</span>
-              <input type='number' bind:value={media.width} on:change={()=>refreshMedia(media.uuid)}>
-            </label>
-            <label>
-              <span>Height</span>
-              <input type='number' bind:value={media.height} on:change={()=>refreshMedia(media.uuid)}>
-            </label>
-            <label>
-              <span>Framerate</span>
-              <input type='number' bind:value={media.framerate} on:change={()=>refreshMedia(media.uuid)}>
-            </label>
-            <label>
-              <span>Facing</span>
-              <select bind:value={media.facing} on:change={()=>refreshMedia(media.uuid)}>
-                <option value=''>Default</option>
-                <option value='user'>User/Front</option>
-                <option value='environment'>Environment/Back</option>
+          <section class='group'>
+            <header>Media Type</header>
+            <section class='options'>
+              <select on:change={(e)=>requestMedia(media.uuid, e)} value={media.mediaType}>
+                <option value='unknown'>unknown</option>
+                <option value='camera'>camera</option>
+                <option value='capture'>capture</option>
               </select>
-            </label>
-            <aside>Select an audio source</aside>
-            <select bind:value={media.audioDevice} on:change={()=>refreshMedia(media.uuid)}>
-              <option value=''>Default</option>
-              {#each audioDevices as audioDevice}
-                <option value={audioDevice.deviceId}>{audioDevice.label}</option>
-              {/each}
-            </select>
-            <label>
-              <span>Noise Suppression</span>
-              <input type='checkbox' bind:checked={media.noiseSuppression} on:change={()=>refreshMedia(media.uuid)}>
-            </label>
+            </section>
+          </section>
+          {#if media.mediaType === 'camera'}
+            <section class='group'>
+              <header>Video Source</header>
+              <section class='options'>
+                <select bind:value={media.videoDevice} on:change={()=>refreshMedia(media.uuid)}>
+                  <option value=''>Default</option>
+                  {#each videoDevices as videoDevice}
+                    <option value={videoDevice.deviceId}>{videoDevice.label}</option>
+                  {/each}
+                </select>
+              </section>
+            </section>
+            <section class='group'>
+              <header>Video Options</header>
+              <section class='options'>
+                <label>
+                  <span>Width</span>
+                  <input type='number' bind:value={media.width} placeholder='default' on:change={()=>refreshMedia(media.uuid)}>
+                </label>
+                <label>
+                  <span>Height</span>
+                  <input type='number' bind:value={media.height} placeholder='default' on:change={()=>refreshMedia(media.uuid)}>
+                </label>
+                <label>
+                  <span>Framerate</span>
+                  <input type='number' bind:value={media.framerate} placeholder='default' on:change={()=>refreshMedia(media.uuid)}>
+                </label>
+                <label>
+                  <span>Facing</span>
+                  <select bind:value={media.facing} on:change={()=>refreshMedia(media.uuid)}>
+                    <option value=''>Default</option>
+                    <option value='user'>User/Front</option>
+                    <option value='environment'>Environment/Back</option>
+                  </select>
+                </label>
+              </section>
+            </section>
+            <section class='group'>
+              <header>Audio Source</header>
+              <section class='options'>
+                <select bind:value={media.audioDevice} on:change={()=>refreshMedia(media.uuid)}>
+                  <option value=''>Default</option>
+                  {#each audioDevices as audioDevice}
+                    <option value={audioDevice.deviceId}>{audioDevice.label}</option>
+                  {/each}
+                </select>
+              </section>
+            </section>
+            <section class='group'>
+              <header>Audio Options</header>
+              <section class='options'>
+                <label>
+                  <span>Noise Suppression</span>
+                  <input type='checkbox' bind:checked={media.noiseSuppression} on:change={()=>refreshMedia(media.uuid)}>
+                </label>
+              </section>
+            </section>
           {:else if media.mediaType === 'capture'}
-            <button on:click={()=>requestCapture(media.uuid)}>reacquire</button>
-            <label>
-              <span>capture audio</span>
-              <input type='checkbox' bind:checked={media.captureAudio} on:change={()=>refreshMedia(media.uuid)}/>
-            </label>
+            <section class='group'>
+              <header>Capture Options</header>
+              <section class='options'>
+                <button on:click={()=>requestCapture(media.uuid)}>reacquire</button>
+                <label>
+                  <span>capture audio</span>
+                  <input type='checkbox' bind:checked={media.captureAudio} on:change={()=>refreshMedia(media.uuid)}/>
+                </label>
+              </section>
+            </section>
           {:else}
-            Select a camera or capture device.
+            <section class='group'>
+              Select a camera or capture device.
+            </section>
           {/if}
           <nav>
             <button on:click={()=>removeMediaSource(media.uuid)}>remove</button>
@@ -213,7 +237,7 @@
             </video>
           {/if}
         </aside>
-      </article>
+      </section>
     {/each}
     <nav>
       <button on:click={addMediaSource}>add media source</button>
@@ -239,7 +263,7 @@
   main {
     position: relative;
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto;
     min-width: 60ch;
     min-height: 30ch;
   }
@@ -251,23 +275,42 @@
     display: flex;
     flex-wrap: wrap;
   }
-  article {
+  .container {
     padding: .5em;
     margin: .5em;
     background: rgb(32, 32, 32);
   }
-  article.media {
+  .media {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
   }
-  article.media video {
+  .media video {
     width: 100%;
     height: 100%;
+    max-width: 640px;
+    max-height: 360px;
     object-fit: contain;
   }
+  .group {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    margin-bottom: .5em;
+  }
+  .group header {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .options {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    padding: .5em;
+    margin-left: .5em;
+  }
   aside.preview {
-    max-width: 30vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   aside {
     display: flex;
@@ -292,5 +335,8 @@
   }
   input[type=number] {
     width: 5em;
+  }
+  select {
+    width: 30ch;
   }
 </style>
