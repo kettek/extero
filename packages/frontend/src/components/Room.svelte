@@ -17,6 +17,7 @@
   import Window from "./Window.svelte"
   import { chatStore } from "../stores/chat"
   import SelfView from "./SelfView.svelte"
+  import { windowStore } from "../stores/windows"
 
   export let websocket: WebSocket
 
@@ -201,7 +202,14 @@
       {/each}
     </section>
     <section slot='b' class='soapbox'>
-      <header>extero</header>
+      <header class='title'>
+        <span>
+          extero
+        </span>
+        <nav>
+          <button on:click={()=>windowStore.show('settings')}>⚙️</button>
+        </nav>
+      </header>
       <section class='settings'>
         <nav>
           <button class:muted={muteAudio} on:click={toggleAudio}>{muteAudio?'un':''}mute audio</button>
@@ -366,11 +374,20 @@
     display: grid;
     grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   }
-  .soapbox > header {
-		text-align: center;
-		font-size: 200%;
-		font-weight: 600;
-		background: #111;
+  header.title {
+    background: #111;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+  }
+  header.title span {
+    text-align: center;
+    font-size: 200%;
+    font-weight: 600;
+  }
+  header.title button {
+    border: 0;
+    background: none;
+		cursor: pointer;
   }
   .chat-input {
     display: grid;

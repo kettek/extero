@@ -18,6 +18,10 @@
 	import type { Store } from './stores/localStore'
 	import type { UserI } from './types/user'
 
+	import Window from './components/Window.svelte'
+	import { windowStore } from './stores/windows'
+	import Settings from './components/Settings.svelte'
+
 	let initErrors: Error[] = []
 
 	let storageReady: boolean = false
@@ -67,7 +71,9 @@
 <main>
 	{#if initErrors.length > 0}
 		<section>
-			<header>Error</header>
+			<header class='title'>
+				<span>Error</span>
+			</header>
 			<article>
 				<p>
 					One or more errors occurred during initialization.
@@ -80,9 +86,14 @@
 		</section>
 	{:else}
 		<section class:roomReady>
-			<header>
+			<header class='title'>
 				{#if !roomReady}
-					extero
+					<span>
+						extero
+					</span>
+					<nav>
+						<button on:click={()=>windowStore.show('settings')}>⚙️</button>
+					</nav>
 				{/if}
 			</header>
 			<article class:roomReady>
@@ -104,6 +115,12 @@
 				{/if}
 			</article>
 		</section>
+	{/if}
+	{#if $windowStore['settings']}
+		<Window>
+			<Settings></Settings>
+	  	<button on:click={()=>{windowStore.hide('settings')}}>close</button>
+		</Window>
 	{/if}
 </main>
 
@@ -133,10 +150,21 @@
 		padding: 0;
 	}
 	header {
+		background: #111;
+	}
+	header.title {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	header.title span {
 		text-align: center;
 		font-size: 200%;
 		font-weight: 600;
-		background: #111;
+	}
+	header.title button {
+		border: 0;
+		background: none;
+		cursor: pointer;
 	}
 	article {
 		background: #111;
