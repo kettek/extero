@@ -18,6 +18,7 @@
   export let localPeer: Peer
   export let comrades: Comrade[] = []
   export let userStorage: Store<UserI>
+  let peerID: number
 
   function refreshComrades() {
     comrades = [...comrades]
