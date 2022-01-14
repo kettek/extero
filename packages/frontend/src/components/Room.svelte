@@ -18,6 +18,7 @@
   import { chatStore } from "../stores/chat"
   import SelfView from "./SelfView.svelte"
   import { windowStore } from "../stores/windows"
+  import Game from "./Game.svelte"
 
   export let websocket: WebSocket
 
@@ -192,14 +193,18 @@
 <main>
   <SplitPane pos={80} type='horizontal'>
     <section slot='a' class='feed' style="grid-template-rows: {gridRows}; grid-template-columns: {gridCols};">
-      {#each comrades.filter(v=>v.inboundMedias.length>0) as comrade}
-        <section class='comrade-feed'>
-          <div style="color: {getComradeColor(comrade)}" class='comrade-feed-name'>
-            {comrade.name}
-          </div>
-          <ComradeView comrade={comrade}></ComradeView>
-        </section>
-      {/each}
+      {#if comrades.length === 0}
+        <Game></Game>
+      {:else}
+        {#each comrades.filter(v=>v.inboundMedias.length>0) as comrade}
+          <section class='comrade-feed'>
+            <div style="color: {getComradeColor(comrade)}" class='comrade-feed-name'>
+              {comrade.name}
+            </div>
+            <ComradeView comrade={comrade}></ComradeView>
+          </section>
+        {/each}
+      {/if}
     </section>
     <section slot='b' class='soapbox'>
       <header class='title'>
