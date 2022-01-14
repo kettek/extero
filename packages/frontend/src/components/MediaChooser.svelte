@@ -278,12 +278,14 @@
   .container {
     padding: .5em;
     margin: .5em;
-    background: rgb(32, 32, 32);
   }
   .media {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
+    background: rgb(32, 32, 32);
+    margin: .5em;
+    padding: .5em;
   }
   .media video {
     width: 100%;
