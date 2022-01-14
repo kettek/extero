@@ -120,7 +120,6 @@
 		align-items: center;
 		justify-content: center;
 		grid-template-rows: auto minmax(0, 1fr);
-		padding: 1em;
 	}
 	section.roomReady {
 		width: 100%;
@@ -141,7 +140,6 @@
 		grid-template-columns: minmax(0, 1fr);
 		grid-template-rows: minmax(0, 1fr);
 		padding: .5em;
-		max-width: 70ch;
 	}
 	article.roomReady {
 		width: 100%;
@@ -149,5 +147,6 @@
 		max-width: 100%;
 		max-height: 100%;
 		overflow: hidden;
+		padding: 0;
 	}
 </style>

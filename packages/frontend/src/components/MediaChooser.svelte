@@ -206,7 +206,7 @@
             <button on:click={()=>removeMediaSource(media.uuid)}>remove</button>
           </nav>
         </aside>
-        <aside>
+        <aside class='preview'>
           {#if media.stream}
             <video use:srcObject={media.stream} autoplay playsinline>
               <track kind='captions'>
@@ -252,21 +252,22 @@
     flex-wrap: wrap;
   }
   article {
-    width: 60ch;
-    height: 30ch;
     padding: .5em;
     margin: .5em;
     background: rgb(32, 32, 32);
   }
   article.media {
     display: grid;
-    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
   }
   article.media video {
     width: 100%;
     height: 100%;
     object-fit: contain;
+  }
+  aside.preview {
+    max-width: 30vw;
   }
   aside {
     display: flex;
