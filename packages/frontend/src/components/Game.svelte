@@ -122,7 +122,7 @@ import { clear_loops } from "svelte/internal"
       y: Math.max(8, Math.min(rows[0].length-9, Math.round(seed*rows[0].length-1))),
     }]
     foods = []
-    framesSinceLastFood = 0
+    framesSinceLastFood = 40
     snakeStyle = snakeStyles[Math.floor(seed*(snakeStyles.length))]
     lastScore = score
     if (calculateScore(lastScore) > calculateScore(bestScore)) {
