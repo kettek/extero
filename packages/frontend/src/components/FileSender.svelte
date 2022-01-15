@@ -82,6 +82,7 @@
     fileStore.clearAssembling()
   }
   function startSendFiles() {
+    let sends: PendingSend[] = []
     for (let comrade of comradeRecipients) {
       let sent = false
       for (let file of $fileStore.assembling) {
@@ -90,13 +91,14 @@
           file,
           status: 'pending',
         }
-        fileStore.addSending(pendingSend)
+        sends.push(pendingSend)
         sent = true
       }
       if (sent) {
         comrade.dataConnection.send(advertiseMessage)
       }
     }
+    fileStore.addSending(sends)
   }
   function removeSendingFile(peer: string, uuid: string) {
     // TODO: Send a revoke message

@@ -5,7 +5,7 @@
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
 
-  import { fileStore, PendingSend } from "../stores/files"
+  import { fileStore, PendingReceive, PendingSend } from "../stores/files"
   import { mediaStore } from "../stores/media"
 
   import { toMarkdown } from '../markdown'
@@ -111,15 +111,17 @@
           refreshComrades()
         })
       } else if (isPeerSendAdvertise(data)) {
+        let recvs: PendingReceive[] = []
         // Add advertised files to our receiving file store.
         for (let file of data.files) {
           console.log('adding receiving', file)
-          fileStore.addReceiving({
+          recvs.push({
             peerID: comrade.peerID,
             file,
             status: 'pending',
           })
         }
+        fileStore.addReceiving(recvs)
       } else if (isPeerSendReject(data)) {
         for (let uuid of data.uuids) {
           fileStore.removeSending(comrade.peerID, uuid)

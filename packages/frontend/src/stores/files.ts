@@ -31,67 +31,82 @@ export const fileStore = {
   set,
   update,
   addAssembling: (file: PeerFile) => {
-    let fs = get(fileStore)
-    fs.assembling.push(file)
-    set(fs)
+    fileStore.update((fs: Files) => {
+      fs.assembling.push(file)
+      return fs
+    })
   },
   removeAssembling: (uuid: string) => {
-    let fs = get(fileStore)
-    fs.assembling = fs.assembling.filter(v=>v.uuid!==uuid)
-    set(fs)
+    fileStore.update((fs: Files) => {
+      fs.assembling = fs.assembling.filter(v=>v.uuid!==uuid)
+      return fs
+    })
   },
   clearAssembling: () => {
-    let fs = get(fileStore)
-    fs.assembling = []
-    set(fs)
+    fileStore.update((fs: Files) => {
+      fs.assembling = []
+      return fs
+    })
   },
-  addSending: (send: PendingSend) => {
-    let fs = get(fileStore)
-    if (fs.sending.find(v=>v.file.uuid===send.file.uuid)) return
-    fs.sending.push(send)
-    set(fs)
+  addSending: (sends: PendingSend[]) => {
+    fileStore.update((fs: Files) => {
+      for (let send of sends) {
+        if (fs.sending.find(v=>v.file.uuid===send.file.uuid&&v.peerID===send.peerID)) return
+        fs.sending.push(send)
+      }
+      return fs
+    })
   },
   removeSending: (peerID: string, uuid: string) => {
-    let fs = get(fileStore)
-    fs.sending = fs.sending.filter(v=>v.file.uuid!==uuid||v.peerID!==peerID)
-    set(fs)
+    fileStore.update((fs: Files) => {
+      fs.sending = fs.sending.filter(v=>v.file.uuid!==uuid||v.peerID!==peerID)
+      return fs
+    })
   },
   updateSendingStatus: (peerID: string, uuid: string, status: 'pending'|'sending'|'sent') => {
-    let fs = get(fileStore)
-    let send = fs.sending.find(v=>v.file.uuid===uuid&&v.peerID===peerID)
-    if (send) {
-      send.status = status
-    }
-    set(fs)
+    fileStore.update((fs: Files) => {
+      let send = fs.sending.find(v=>v.file.uuid===uuid&&v.peerID===peerID)
+      if (send) {
+        send.status = status
+      }
+      return fs
+    })
   },
   clearSent: () => {
-    let fs = get(fileStore)
-    fs.sending = fs.sending.filter(v=>v.status!=='sent')
-    set(fs)
+    fileStore.update((fs: Files) => {
+      fs.sending = fs.sending.filter(v=>v.status!=='sent')
+      return fs
+    })
   },
-  addReceiving: (recv: PendingReceive) => {
-    let fs = get(fileStore)
-    if (fs.receiving.find(v=>v.file.uuid===recv.file.uuid)) return
-    fs.receiving.push(recv)
-    set(fs)
+  addReceiving: (recvs: PendingReceive[]) => {
+    fileStore.update((fs: Files) => {
+      for (let recv of recvs) {
+        if (fs.receiving.find(v=>v.file.uuid===recv.file.uuid)) return
+        fs.receiving.push(recv)
+      }
+      return fs
+    })
   },
   removeReceiving: (peerID: string, uuid: string) => {
-    let fs = get(fileStore)
-    fs.receiving = fs.receiving.filter(v=>v.file.uuid!==uuid||v.peerID!==peerID)
-    set(fs)
+    fileStore.update((fs: Files) => {
+      fs.receiving = fs.receiving.filter(v=>v.file.uuid!==uuid||v.peerID!==peerID)
+      return fs
+    })
   },
   updateReceivingStatus: (peerID: string, uuid: string, status: 'pending'|'receiving'|'received') => {
-    let fs = get(fileStore)
-    let recv = fs.receiving.find(v=>v.file.uuid===uuid&&v.peerID===peerID)
-    if (recv) {
-      recv.status = status
-    }
-    set(fs)
+    fileStore.update((fs: Files) => {
+      let recv = fs.receiving.find(v=>v.file.uuid===uuid&&v.peerID===peerID)
+      if (recv) {
+        recv.status = status
+      }
+      return fs
+    })
   },
   clearReceived: () => {
-    let fs = get(fileStore)
-    fs.receiving = fs.receiving.filter(v=>v.status!=='received')
-    set(fs)
+    fileStore.update((fs: Files) => {
+      fs.receiving = fs.receiving.filter(v=>v.status!=='received')
+      return fs
+    })
   },
   refresh: () => {
     set({...get(fileStore)})
