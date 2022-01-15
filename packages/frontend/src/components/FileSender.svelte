@@ -179,7 +179,7 @@
       console.error(new Error("no receivedFile to save"))
       return
     }
-    let blob = new Blob([file.receivedFile.data.buffer])
+    let blob = new Blob([new Uint8Array(file.receivedFile.data)])
     try {
       await fileSave(blob, {
         fileName: file.receivedFile.name,
