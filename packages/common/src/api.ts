@@ -255,6 +255,20 @@ export function mkPeerSendResponse(files: PeerFile[]): PeerSendResponse {
   }
 }
 
+export interface PeerSendReceive {
+  type: 'send-receive'
+  uuids: string[]
+}
+export function isPeerSendReceive(o: any): o is PeerSendReceive {
+  return o.type === 'send-receive'
+}
+export function mkPeerSendReceive(uuids: string[]): PeerSendReceive {
+  return {
+    type: 'send-receive',
+    uuids,
+  }
+}
+
 export interface ChatHistory {
   /** Record of the sender of the chat message */
   from: string
