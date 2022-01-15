@@ -28,3 +28,7 @@ input, select {
 	cursor: pointer;
 	border-radius: .5em .75em .75em .5em;
 }
+
+input[type=text] {
+	cursor: text;
+}
