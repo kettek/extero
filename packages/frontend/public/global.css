@@ -32,3 +32,12 @@ input, select {
 input[type=text] {
 	cursor: text;
 }
+
+input[type=color] {
+	padding: 0;
+	width: 2ch;
+	height: 2ch;
+	margin: 0;
+	background: none;
+	border: 0;
+}
