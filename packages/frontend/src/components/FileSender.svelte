@@ -249,7 +249,14 @@
               <span>{(send.file.data.length/1024/1024).toFixed(2)}MB</span>
               <span> ➡ {comrades.find(v=>v.peerID===send.peerID)?.name}</span>
               <span>
-                <button on:click={()=>removeSendingFile(send.peerID, send.file.uuid)}>revoke</button>
+                {#if send.status==='pending'}
+                  <button on:click={()=>removeSendingFile(send.peerID, send.file.uuid)}>revoke</button>
+                {:else if send.status==='sending'}
+                  <span>...</span>
+                  <button on:click={()=>removeSendingFile(send.peerID, send.file.uuid)}>clear</button>
+                {:else if send.status==='sent'}
+                  <button on:click={()=>removeSendingFile(send.peerID, send.file.uuid)}>clear</button>
+                {/if}
               </span>
             </div>
           {/each}

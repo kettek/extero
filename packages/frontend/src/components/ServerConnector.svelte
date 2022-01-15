@@ -1,7 +1,7 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import Peer, { DataConnection, MediaConnection } from 'peerjs'
-  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage, mkPeerImageMessage, isPeerImageMessage, isPeerSendAdvertise, isPeerSendRequest, isPeerSendResponse, mkPeerSendResponse, PeerFile, isPeerSendReject } from '@extero/common/dist/src/api'
+  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage, mkPeerImageMessage, isPeerImageMessage, isPeerSendAdvertise, isPeerSendRequest, isPeerSendResponse, mkPeerSendResponse, PeerFile, isPeerSendReject, isPeerSendReceive, mkPeerSendReceive } from '@extero/common/dist/src/api'
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
 
@@ -138,19 +138,21 @@
           console.error('request for 0 valid file offers!')
           return
         }
-        // Begin sending!
+        fileStore.refresh()
+        // Send
         comrade.dataConnection.send(
           mkPeerSendResponse(files)
         )
-
-        // I guess we can just remove the sending here, since it isn't done w/ streaming. This could be changed if we switch to a chunking model.
-        for (let file of files) {
-          let match = $fileStore.sending.find(v=>v.file.uuid===file.uuid&&v.status==='sending'&&v.peerID===comrade.peerID)
+      } else if (isPeerSendReceive(data)) {
+        // Peer received a file from us. Mark it as received.
+        for (let uuid of data.uuids) {
+          let match = $fileStore.sending.find(v=>v.file.uuid===uuid&&v.status==='sending'&&v.peerID===comrade.peerID)
           if (!match) continue
           match.status = 'sent'
         }
-        fileStore.clearSent()
+        fileStore.refresh()
       } else if (isPeerSendResponse(data)) {
+        let received: string[] = []
         for (let file of data.files) {
           let fsFile = $fileStore.receiving.find(v=>v.file.uuid === file.uuid&&v.peerID===comrade.peerID)
           if (!fsFile) {
@@ -159,6 +161,12 @@
           }
           fsFile.receivedFile = file
           fileStore.updateReceivingStatus(comrade.peerID, file.uuid, 'received')
+          received.push(file.uuid)
+        }
+        if (received.length > 0) {
+          comrade.dataConnection.send(
+            mkPeerSendReceive(received)
+          )
         }
       }
       console.log('got peer data', data)
