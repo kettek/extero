@@ -152,7 +152,6 @@
           match.status = 'sent'
         }
         fileStore.refresh()
-        playSound('received')
       } else if (isPeerSendResponse(data)) {
         let received: string[] = []
         for (let file of data.files) {
@@ -169,6 +168,7 @@
           comrade.dataConnection.send(
             mkPeerSendReceive(received)
           )
+          playSound('received')
         }
       }
       console.log('got peer data', data)
