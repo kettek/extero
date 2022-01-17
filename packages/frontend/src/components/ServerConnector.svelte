@@ -122,6 +122,7 @@
           })
         }
         fileStore.addReceiving(recvs)
+        playSound('offer')
       } else if (isPeerSendReject(data)) {
         for (let uuid of data.uuids) {
           fileStore.removeSending(comrade.peerID, uuid)
@@ -151,6 +152,7 @@
           match.status = 'sent'
         }
         fileStore.refresh()
+        playSound('received')
       } else if (isPeerSendResponse(data)) {
         let received: string[] = []
         for (let file of data.files) {
