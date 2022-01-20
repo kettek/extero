@@ -122,6 +122,7 @@
           })
         }
         fileStore.addReceiving(recvs)
+        playSound('offer')
       } else if (isPeerSendReject(data)) {
         for (let uuid of data.uuids) {
           fileStore.removeSending(comrade.peerID, uuid)
@@ -167,6 +168,7 @@
           comrade.dataConnection.send(
             mkPeerSendReceive(received)
           )
+          playSound('received')
         }
       }
       console.log('got peer data', data)
