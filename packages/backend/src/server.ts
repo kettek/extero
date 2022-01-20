@@ -15,32 +15,32 @@ import { from as settingsFrom } from './settings'
 	let roomServer: https.Server | http.Server
 	const app = express()
 
-	if (settings.https) {
+	if (settings.http.tls) {
 		server = https.createServer({
-			key: await fs.promises.readFile(settings.https.key),
-			cert: await fs.promises.readFile(settings.https.cert),
-		}, app).listen(settings.port, () => {
-			return console.log(`securely listening on ${settings.port}`)
+			key: await fs.promises.readFile(settings.http.tls.key),
+			cert: await fs.promises.readFile(settings.http.tls.cert),
+		}, app).listen(settings.http.port, () => {
+			return console.log(`securely listening on ${settings.http.port}`)
 		})
 	} else {
-		server = http.createServer(app).listen(settings.port, () => {
-			return console.log(`insecurely listening on ${settings.port}`)
+		server = http.createServer(app).listen(settings.http.port, () => {
+			return console.log(`insecurely listening on ${settings.http.port}`)
 		})
 	}
 
 	let rooms = []
-	if (settings.https) {
+	if (settings.roomManager.tls) {
 		roomServer = https.createServer({
-			key: await fs.promises.readFile(settings.https.key),
-			cert: await fs.promises.readFile(settings.https.cert),
+			key: await fs.promises.readFile(settings.roomManager.tls.key),
+			cert: await fs.promises.readFile(settings.roomManager.tls.cert),
 		}, (req, res) => {
-		}).listen(settings.wsPort, () => {
-			return console.log(`wss listening on ${settings.wsPort}`)
+		}).listen(settings.roomManager.port, () => {
+			return console.log(`wss listening on ${settings.roomManager.port}`)
 		})
 	} else {
 		roomServer = http.createServer((req, res) => {
-		}).listen(settings.wsPort, () => {
-			return console.log(`ws listening on ${settings.wsPort}`)
+		}).listen(settings.roomManager.port, () => {
+			return console.log(`ws listening on ${settings.roomManager.port}`)
 		})
 	}
 

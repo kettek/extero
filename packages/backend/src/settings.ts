@@ -2,21 +2,37 @@ import yaml from 'yaml'
 import fs from 'fs'
 
 export interface SettingsI {
-  port: number
-  wsPort: number
-  https?: {
-    key: string
-    cert: string
+  http: {
+    port: number
+    tls?: {
+      key: string
+      cert: string
+    }
+  }
+  roomManager: {
+    port: number
+    tls?: {
+      key: string
+      cert: string
+    }
   }
 }
 
 export const DefaultSettings: SettingsI = {
-  port: 3000,
-  wsPort: 3001,
-  https: {
-    key: 'localhost.key',
-    cert: 'localhost.cert',
-  }
+  http: {
+    port: 3000,
+    tls: {
+      key: 'localhost.key',
+      cert: 'localhost.cert',
+    }
+  },
+  roomManager: {
+    port: 3001,
+    tls: {
+      key: 'localhost.key',
+      cert: 'localhost.cert',
+    }
+  },
 }
 
 function copy<T>(source: T): T {
