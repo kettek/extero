@@ -230,11 +230,14 @@
     const parsedUrl = new URL(window.location.href)
     try {
       await new Promise((resolve: (value: void) => void, reject: (reason: any) => void) => {
-        localPeer = new Peer({
+        let peerOptions: Peer.PeerJSOption = {
           host: window.location.hostname,
-          port: Number(window.location.port),
           path: '/peer',
-        })
+        }
+        if (window.location.port) {
+          peerOptions.port = Number(window.location.port)
+        }
+        localPeer = new Peer(peerOptions)
 
         localPeer.on('open', (id: string) => {
           console.log("peer open")
