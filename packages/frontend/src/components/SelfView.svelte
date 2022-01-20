@@ -16,7 +16,7 @@
 <main>
   <section class='primary'>
     {#if $mediaStore.length > 0 && $mediaStore[0].stream}
-      <video use:srcObject={$mediaStore[0].stream} autoplay muted>
+      <video use:srcObject={$mediaStore[0].stream} autoplay playsinline muted>
         <track kind='captions'>
       </video>
     {/if}
@@ -24,7 +24,7 @@
   <section class='secondaries'>
     {#each $mediaStore as media, mediaIndex}
       {#if mediaIndex >= 1}
-        <video use:srcObject={media.stream} autoplay muted>
+        <video use:srcObject={media.stream} autoplay playsinline muted>
           <track kind='captions'>
         </video>
       {/if}
