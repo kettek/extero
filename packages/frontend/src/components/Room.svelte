@@ -34,6 +34,8 @@
 
   let pendingChatInput: string = ''
   let chatElement: HTMLElement
+  let chatInputElement: HTMLInputElement
+  let isChatFocused: boolean = false
 
   let scrollTimeout: number
   let isScrolling: boolean = false
@@ -200,6 +202,8 @@
       sendFiles = !sendFiles
     } else if (e.key === 'l') {
       leaveRoom()
+    } else if (e.key === 'Enter' || e.key === 'i') {
+      chatInputElement.focus()
     }
   }
 
@@ -311,7 +315,7 @@
         {/each}
       </section>
       <section class='chat-input'>
-        <input type='text' bind:value={pendingChatInput} on:keyup={onChatInputKeyUp}>
+        <input bind:this={chatInputElement} type='text' bind:value={pendingChatInput} on:keyup={onChatInputKeyUp} placeholder={isChatFocused?'':'hit enter or i to focus'} on:focus={()=>isChatFocused=true} on:blur={()=>isChatFocused=false}>
         <button on:click={sendChat}>Send</button>
       </section>
     </section>
