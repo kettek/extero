@@ -76,10 +76,16 @@
       },
     }
   }
+
+  function onMousewheel(e: WheelEvent) {
+    comrade.volume -= Math.sign(e.deltaY) * 5
+    if (comrade.volume < 0) comrade.volume = 0
+    if (comrade.volume > 200) comrade.volume = 200
+  }
 </script>
 
 {#if primaryStream}
-  <div>
+  <div on:wheel={onMousewheel}>
     <video bind:this={primaryElement} class='primary' use:srcObject={primaryStream.stream} autoplay playsinline muted={comrade.volume===0}>
       <track kind='captions'>
     </video>
