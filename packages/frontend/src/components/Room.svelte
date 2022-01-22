@@ -182,10 +182,33 @@
     }
   }
 
+  function onKeyup(e: KeyboardEvent) {
+    if (document.activeElement && document.activeElement.tagName.toLowerCase() === 'input') {
+      return
+    }
+    if (e.key === 'a') {
+      // (Un)Mute audio
+      toggleAudio()
+    } else if (e.key === 'v') {
+      // (Un)Mute video
+      toggleVideo()
+    } else if (e.key === 'm') {
+      // (Un)Mute audio/video
+      toggleVideo()
+      toggleAudio()
+    } else if (e.key === 'f') {
+      sendFiles = !sendFiles
+    } else if (e.key === 'l') {
+      leaveRoom()
+    }
+  }
+
   onMount(() => {
     playSound('self_join')
+    window.addEventListener('keyup', onKeyup)
     return () => {
       playSound('self_leave')
+      window.removeEventListener('keyup', onKeyup)
     }
   })
 </script>
@@ -217,9 +240,15 @@
       </header>
       <section class='settings'>
         <nav>
-          <button class:muted={muteAudio} on:click={toggleAudio}>{muteAudio?'un':''}mute audio</button>
-          <button class:muted={muteVideo} on:click={toggleVideo}>{muteVideo?'un':''}mute video</button>
-          <button on:click={leaveRoom}>leave</button>
+          <button class:muted={muteAudio} on:click={toggleAudio}>
+            {muteAudio?'un':''}<span class='underline'>m</span>ute <span class='underline'>a</span>udio
+          </button>
+          <button class:muted={muteVideo} on:click={toggleVideo}>
+            {muteVideo?'un':''}<span class='underline'>m</span>ute <span class='underline'>v</span>ideo
+          </button>
+          <button on:click={leaveRoom}>
+            <span class='underline'>l</span>eave
+          </button>
         </nav>
         <section class='self-video'>
           <SelfView></SelfView>
@@ -257,7 +286,9 @@
           </div>
         {/each}
         <div class='comrade-chat-options'>
-          <button on:click={()=>{sendFiles = true}}>send files</button>
+          <button on:click={()=>{sendFiles = true}}>
+            send <span class='underline'>f</span>iles
+          </button>
         </div>
       </section>
       <section class='chat' bind:this={chatElement}>
@@ -411,5 +442,8 @@
   .settings video {
     max-width: 320px;
     max-height: 240px;
+  }
+  .underline {
+    text-decoration: underline;
   }
 </style>
