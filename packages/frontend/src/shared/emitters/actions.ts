@@ -94,7 +94,7 @@ export class Actions {
     }
     this.keys.delete(e.key)
   }
-  trigger(actionName: ActionName, keys: Key[], data?: any) {
+  trigger(actionName: ActionName, keys?: Key[], data?: any) {
     for (let [handler, actions] of this.handlers) {
       for (let handlerActionName of actions) {
         if (handlerActionName === actionName) {
