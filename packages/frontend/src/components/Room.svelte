@@ -62,6 +62,8 @@
   function onChatInputKeyUp(e: KeyboardEvent) {
     if (e.code === 'Enter') {
       sendChat()
+    } else if (e.code === 'Escape') {
+      chatInputElement.blur()
     }
   }
   function sendChat() {
