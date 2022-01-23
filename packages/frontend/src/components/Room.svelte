@@ -19,7 +19,7 @@
   import SelfView from "./SelfView.svelte"
   import { windowStore } from "../stores/windows"
   import Game from "./Game.svelte"
-  import { ActionEvent, globalActions } from "../shared/emitters/actions"
+  import { ActionEvent, Actions } from "../shared/emitters/actions"
 
   export let websocket: WebSocket
 
@@ -62,9 +62,9 @@
 
   function onChatInputKeyUp(e: KeyboardEvent) {
     if (e.code === 'Enter') {
-      globalActions.trigger('send chat', [e.code])
+      actions.trigger('send chat', [e.code])
     } else if (e.code === 'Escape') {
-      globalActions.trigger('blur chat', [e.code])
+      actions.trigger('blur chat', [e.code])
     }
   }
   function sendChat() {
@@ -176,6 +176,7 @@
     }
   }
 
+  let actions = new Actions()
   function onAction(event: ActionEvent): boolean {
     switch (event.which) {
       case 'focus chat':
@@ -221,13 +222,15 @@
       'leave': ['l'],
     }
 
-    globalActions.bind(Object.keys(actionDefinitions), onAction)
-    globalActions.register(actionDefinitions)
+    actions.hook()
+    actions.bind(Object.keys(actionDefinitions), onAction)
+    actions.register(actionDefinitions)
 
     return () => {
       playSound('self_leave')
-      globalActions.unregister(actionDefinitions)
-      globalActions.unbind(Object.keys(actionDefinitions), onAction)
+      actions.unregister(actionDefinitions)
+      actions.unbind(Object.keys(actionDefinitions), onAction)
+      actions.unhook()
     }
   })
 </script>
