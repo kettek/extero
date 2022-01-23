@@ -19,6 +19,7 @@
   import SelfView from "./SelfView.svelte"
   import { windowStore } from "../stores/windows"
   import Game from "./Game.svelte"
+  import { ActionEvent, globalActions } from "../shared/emitters/actions"
 
   export let websocket: WebSocket
 
@@ -61,9 +62,9 @@
 
   function onChatInputKeyUp(e: KeyboardEvent) {
     if (e.code === 'Enter') {
-      sendChat()
+      globalActions.trigger('send chat', [e.code])
     } else if (e.code === 'Escape') {
-      chatInputElement.blur()
+      globalActions.trigger('blur chat', [e.code])
     }
   }
   function sendChat() {
@@ -116,17 +117,6 @@
       return getComradeColor(comrade)
     }
     return getNameColor(name)
-  }
-
-  function srcObject(node: HTMLVideoElement, stream: MediaStream) {
-    node.srcObject = stream
-    return {
-      update(nextStream: MediaStream) {
-        if (node.srcObject !== nextStream) {
-          node.srcObject = nextStream
-        }
-      },
-    }
   }
 
   function toggleAudio() {
@@ -186,35 +176,58 @@
     }
   }
 
-  function onKeyup(e: KeyboardEvent) {
-    if (document.activeElement && document.activeElement.tagName.toLowerCase() === 'input') {
-      return
+  function onAction(event: ActionEvent): boolean {
+    switch (event.which) {
+      case 'focus chat':
+        chatInputElement.focus()
+        break
+      case 'blur chat':
+        chatInputElement.blur()
+        break
+      case 'send chat':
+        sendChat()
+        break
+      case 'mute':
+        toggleVideo()
+        toggleAudio()
+        break
+      case 'mute audio':
+        toggleAudio()
+        break
+      case 'mute video':
+        toggleVideo()
+        break
+      case 'files':
+        sendFiles = !sendFiles
+        break
+      case 'leave':
+        leaveRoom()
+        break
     }
-    if (e.key === 'a') {
-      // (Un)Mute audio
-      toggleAudio()
-    } else if (e.key === 'v') {
-      // (Un)Mute video
-      toggleVideo()
-    } else if (e.key === 'm') {
-      // (Un)Mute audio/video
-      toggleVideo()
-      toggleAudio()
-    } else if (e.key === 'f') {
-      sendFiles = !sendFiles
-    } else if (e.key === 'l') {
-      leaveRoom()
-    } else if (e.key === 'Enter' || e.key === 'i') {
-      chatInputElement.focus()
-    }
+    return true
   }
 
   onMount(() => {
     playSound('self_join')
-    window.addEventListener('keyup', onKeyup)
+
+    let actionDefinitions = {
+      'focus chat': ['Enter', 'i'],
+      'blur chat': ['Escape'],
+      'send chat': [],
+      'mute': ['m'],
+      'mute audio': ['a'],
+      'mute video': ['v'],
+      'files': ['f'],
+      'leave': ['l'],
+    }
+
+    globalActions.bind(Object.keys(actionDefinitions), onAction)
+    globalActions.register(actionDefinitions)
+
     return () => {
       playSound('self_leave')
-      window.removeEventListener('keyup', onKeyup)
+      globalActions.unregister(actionDefinitions)
+      globalActions.unbind(Object.keys(actionDefinitions), onAction)
     }
   })
 </script>

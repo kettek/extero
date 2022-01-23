@@ -21,6 +21,7 @@
 	import Window from './components/Window.svelte'
 	import { windowStore } from './stores/windows'
 	import Settings from './components/Settings.svelte'
+import { globalActions } from './shared/emitters/actions';
 
 	let initErrors: Error[] = []
 
@@ -65,6 +66,7 @@
 	onMount(async () => {
 		await init()
 		await restore()
+		globalActions.hook()
 	})
 </script>
 
