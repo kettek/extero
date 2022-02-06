@@ -1,6 +1,7 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import { enableStore } from "../stores/localStore"
+  import Button from "./Button.svelte"
 
   export let ready: boolean = false
 
@@ -64,7 +65,7 @@
     {:else}
       {#if !storageAllowed}
         Storage denied, user and room settings will not be persistent.
-        <button on:click={()=>{ready=true}}>okay</button>
+        <Button on:click={()=>{ready=true}} icon='okay'/>
       {/if}
     {/if}
     {#if error}

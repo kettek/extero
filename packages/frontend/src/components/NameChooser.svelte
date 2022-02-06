@@ -2,6 +2,7 @@
   import { uniqueNamesGenerator, colors, starWars } from 'unique-names-generator'
   import { localStore, Store, storeAvailable } from '../stores/localStore'
   import type { UserI } from '../types/user'
+  import Button from './Button.svelte'
 
   export let storage: Store<UserI> = localStore<UserI>('user', {
     name: '',
@@ -76,7 +77,7 @@
     <label>
       <span>Name</span>
       <input type='text' bind:value={$storage.name}/>
-      <button on:click={randomizeName}>🎲</button>
+      <Button on:click={randomizeName} icon='random' alt='randomize name' />
     </label>
     <label>
       <span>Color</span>
@@ -93,7 +94,7 @@
     </article>
   </section>
   <nav>
-    <button on:click={()=>nameReady=true}>okay</button>
+    <Button on:click={()=>nameReady=true} icon='okay'/>
   </nav>
 </main>
 

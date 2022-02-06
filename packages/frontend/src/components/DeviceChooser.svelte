@@ -1,5 +1,6 @@
 <script type='ts'>
   import { createEventDispatcher, onMount } from 'svelte'
+  import Button from './Button.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -70,5 +71,5 @@
       {/each}
     </select>
   </section>
-  <button on:click={()=>ready=true}>okay</button>
+  <Button on:click={()=>ready=true} icon='close'/>
 </main>

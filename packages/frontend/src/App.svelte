@@ -21,7 +21,8 @@
 	import Window from './components/Window.svelte'
 	import { windowStore } from './stores/windows'
 	import Settings from './components/Settings.svelte'
-import { globalActions } from './shared/emitters/actions';
+	import { globalActions } from './shared/emitters/actions'
+	import Button from './components/Button.svelte'
 
 	let initErrors: Error[] = []
 
@@ -94,7 +95,7 @@ import { globalActions } from './shared/emitters/actions';
 						extero
 					</span>
 					<nav>
-						<button on:click={()=>windowStore.show('settings')}>⚙️</button>
+						<Button on:click={()=>windowStore.show('settings')} icon='settings'/>
 					</nav>
 				{/if}
 			</header>
@@ -121,7 +122,7 @@ import { globalActions } from './shared/emitters/actions';
 	{#if $windowStore['settings']}
 		<Window>
 			<Settings></Settings>
-	  	<button on:click={()=>{windowStore.hide('settings')}}>close</button>
+	  	<Button on:click={()=>{windowStore.hide('settings')}} icon='close'/>
 		</Window>
 	{/if}
 </main>

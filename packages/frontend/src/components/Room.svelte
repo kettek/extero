@@ -20,6 +20,7 @@
   import { windowStore } from "../stores/windows"
   import Game from "./Game.svelte"
   import { ActionEvent, Actions } from "../shared/emitters/actions"
+  import Button from "./Button.svelte"
 
   export let websocket: WebSocket
 
@@ -176,7 +177,7 @@
     }
   }
 
-  let actions = new Actions()
+  let actions: Actions = new Actions()
   function onAction(event: ActionEvent): boolean {
     switch (event.which) {
       case 'focus chat':
@@ -257,23 +258,13 @@
           extero
         </span>
         <nav>
-          <button on:click={()=>windowStore.show('settings')}>⚙️</button>
+          <Button on:click={()=>windowStore.show('settings')} icon='settings'/>
+          <Button on:click={leaveRoom} icon='leave' alt='Leave'/>
         </nav>
       </header>
       <section class='settings'>
-        <nav>
-          <button class:muted={muteAudio} on:click={toggleAudio}>
-            {muteAudio?'un':''}<span class='underline'>m</span>ute <span class='underline'>a</span>udio
-          </button>
-          <button class:muted={muteVideo} on:click={toggleVideo}>
-            {muteVideo?'un':''}<span class='underline'>m</span>ute <span class='underline'>v</span>ideo
-          </button>
-          <button on:click={leaveRoom}>
-            <span class='underline'>l</span>eave
-          </button>
-        </nav>
         <section class='self-video'>
-          <SelfView></SelfView>
+          <SelfView actions={actions} bind:muteAudio bind:muteVideo></SelfView>
         </section>
       </section>
       <section class='comrades'>
@@ -283,14 +274,14 @@
               <img src={$userStorage.image} alt={$userStorage.name} />
             {/if}
           </div>
-          <div>
+          <div class='comrade-chat-self-name'>
             {#if editUsername}
               <input type='text' bind:value={pendingUsername} on:keyup={usernameKeyup}>
-              <span on:click={cancelEditUsername}>🚫️</span>
-              <span on:click={commitPendingUsername}>✔️</span>
+              <Button on:click={cancelEditUsername} icon='cancel' alt='cancel'/>
+              <Button on:click={commitPendingUsername} icon='okay' alt='change'/>
             {:else}
               <span>{$userStorage.name}</span>
-              <span on:click={startEditUsername}>✏️</span>
+              <Button on:click={startEditUsername} icon='edit' alt='change name'/>
             {/if}
             <input type='color' bind:value={$userStorage.color} on:change={updateColor}/>
           </div>
@@ -308,9 +299,7 @@
           </div>
         {/each}
         <div class='comrade-chat-options'>
-          <button on:click={()=>{sendFiles = true}}>
-            send <span class='underline'>f</span>iles
-          </button>
+          <Button on:click={()=>{sendFiles = true}} icon='files' alt='send Files'/>
         </div>
       </section>
       <section class='chat' bind:this={chatElement}>
@@ -334,7 +323,7 @@
       </section>
       <section class='chat-input'>
         <input bind:this={chatInputElement} type='text' bind:value={pendingChatInput} on:keyup={onChatInputKeyUp} placeholder={isChatFocused?'':'hit enter or i to focus'} on:focus={()=>isChatFocused=true} on:blur={()=>isChatFocused=false}>
-        <button on:click={sendChat}>Send</button>
+        <Button on:click={sendChat} icon='send'/>
       </section>
     </section>
   </SplitPane>
@@ -342,7 +331,7 @@
 {#if sendFiles}
 <Window>
   <FileSender comrades={comrades}></FileSender>
-  <button on:click={()=>{sendFiles=false}}>close</button>
+  <Button on:click={()=>{sendFiles=false}} icon='close'/>
 </Window>
 {/if}
 
@@ -428,6 +417,10 @@
     height: 100%;
     object-fit: contain;
   }
+  .comrade-chat-self-name {
+    display: flex;
+    align-items: center;
+  }
   .soapbox {
     display: grid;
     grid-template-rows: auto auto auto minmax(0, 1fr) auto;
@@ -459,7 +452,7 @@
   }
   .settings {
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
   }
   .settings video {
     max-width: 320px;

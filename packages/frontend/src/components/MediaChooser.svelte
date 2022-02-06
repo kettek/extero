@@ -3,6 +3,7 @@
 
 	import { v4 } from 'uuid'
   import { mediaStore } from '../stores/media'
+  import Button from './Button.svelte'
 
   export let ready: boolean = false
   export let pending: string = ''
@@ -227,7 +228,7 @@
             </section>
           {/if}
           <nav>
-            <button on:click={()=>removeMediaSource(media.uuid)}>remove</button>
+            <Button on:click={()=>removeMediaSource(media.uuid)} icon='remove' alt='remove media source'/>
           </nav>
         </aside>
         <aside class='preview'>
@@ -240,11 +241,11 @@
       </section>
     {/each}
     <nav>
-      <button on:click={addMediaSource}>add media source</button>
+      <Button on:click={addMediaSource} icon='add' alt='add media source'/>
     </nav>
   </section>
   <nav>
-    <button on:click={()=>ready=true}>okay</button>
+    <Button on:click={()=>ready=true} icon='okay'/>
   </nav>
   {#if pending}
     <article class='pender'>
@@ -254,7 +255,7 @@
   {#if error}
     <article class='pender error'>
       {error}
-      <button on:click={clearError}>okay</button>
+      <Button on:click={clearError} icon='okay'/>
     </article>
   {/if}
 </main>

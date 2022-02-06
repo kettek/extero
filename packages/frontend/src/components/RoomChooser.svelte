@@ -2,6 +2,7 @@
 import { onMount } from 'svelte';
 
   import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator'
+  import Button from './Button.svelte'
 
   export let roomReady: boolean = false
   export let room: string = ''
@@ -36,7 +37,7 @@ import { onMount } from 'svelte';
     </label>
   </section>
   <nav>
-    <button on:click={joinRoom}>okay</button>
+    <Button on:click={joinRoom} icon='okay'/>
   </nav>
 </main>
 
