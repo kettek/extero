@@ -1,5 +1,6 @@
 <script type='ts'>
   import type { Comrade } from "../comrade"
+  import Icon from "./Icon.svelte"
 
   export let comrade: Comrade
 
@@ -98,6 +99,13 @@
       <input type='range' orient='vertical' bind:value={comrade.volume} min=0 max=200 step=0.25/>
       <input type='number' bind:value={comrade.volume} min=0 max=200 step=0.25/>
     </aside>
+    <aside class='indicator'>
+      {#if comrade.volume === 0}
+        <Icon icon='speakerOff' large></Icon>
+      {:else if comrade.volume < 35}
+        <Icon icon='speakerLow' large></Icon>
+      {/if}
+    </aside>
   </div>
 {/if}
 
@@ -119,6 +127,13 @@
   }
   div:hover .controls {
     opacity: 1;
+  }
+  .indicator {
+    pointer-events: none;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
   }
   aside input[type=range] {
     writing-mode: bt-lr;
