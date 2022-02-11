@@ -1,4 +1,5 @@
 <script type='ts'>
+  import Icon from "./Icon.svelte"
 
   export let icon: string = ''
   export let large: boolean = false
@@ -7,7 +8,7 @@
 
 <button title={alt} on:click class:large class:iconOnly={icon}>
   {#if icon}
-    <img src='icons/{icon}.png' alt='{icon}'>
+    <Icon large={large} alt={alt} icon={icon}></Icon>
   {/if}
   <slot></slot>
 </button>
@@ -24,14 +25,5 @@
   button.iconOnly {
     padding: 0.25em;
     background: none;
-  }
-  button.large img {
-    height: 5em;
-  }
-  img {
-    object-fit: contain;
-    max-width: 100%;
-    max-height: 100%;
-    height: 2em;
   }
 </style>
