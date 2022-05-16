@@ -1,5 +1,5 @@
 <script type='ts'>
-  import { ChatHistory, mkLeaveRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerNameMessage } from "@extero/common/dist/src/api"
+  import { ChatHistory, mkLeaveRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerNameMessage, mkPeerMediaStateMessage } from "@extero/common/dist/src/api"
 
   import type { Comrade } from "../comrade"
   import ComradeView from "./ComradeView.svelte"
@@ -128,6 +128,9 @@
           track.enabled = !muteAudio
         }
       }
+      for (let c of comrades) {
+        c.dataConnection.send(mkPeerMediaStateMessage(media.uuid, muteVideo, muteAudio))
+      }
     }
   }
   function toggleVideo() {
@@ -137,6 +140,9 @@
         for (let track of media.stream.getVideoTracks()) {
           track.enabled = !muteVideo
         }
+      }
+      for (let c of comrades) {
+        c.dataConnection.send(mkPeerMediaStateMessage(media.uuid, muteVideo, muteAudio))
       }
     }
   }

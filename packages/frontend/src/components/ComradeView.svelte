@@ -100,6 +100,20 @@
       <input type='number' bind:value={comrade.volume} min=0 max=200 step=0.25/>
     </aside>
     <aside class='indicator'>
+      {#if primaryStream.mutedAudio}
+        <Icon icon='micOff large'></Icon>
+      {/if}
+      {#if primaryStream.mutedVideo}
+        <Icon icon='videoOff large'></Icon>
+      {/if}
+      {#if secondaryStream}
+        {#if secondaryStream.mutedAudio}
+          <Icon icon='micOff'></Icon>
+        {/if}
+        {#if secondaryStream.mutedVideo}
+          <Icon icon='videoOff'></Icon>
+        {/if}
+      {/if}
       {#if comrade.volume === 0}
         <Icon icon='speakerOff' large></Icon>
       {:else if comrade.volume < 35}

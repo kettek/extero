@@ -1,7 +1,7 @@
 <script type='ts'>
   import { onMount } from "svelte"
   import Peer, { DataConnection, MediaConnection } from 'peerjs'
-  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage, mkPeerImageMessage, isPeerImageMessage, isPeerSendAdvertise, isPeerSendRequest, isPeerSendResponse, mkPeerSendResponse, PeerFile, isPeerSendReject, isPeerSendReceive, mkPeerSendReceive } from '@extero/common/dist/src/api'
+  import { ChatHistory, isHelloMessage, isJoinRoomMessage, isMemberJoinMessage, isMemberLeftMessage, isPeerChatMessage, isPeerColorMessage, isPeerMediaAdvertise, isPeerMediaRequest, isPeerNameMessage, MediaType, mkHelloMessage, mkJoinRoomMessage, mkPeerChatMessage, mkPeerColorMessage, mkPeerMediaAdvertise, mkPeerMediaRequest, mkPeerNameMessage, mkPeerImageMessage, isPeerImageMessage, isPeerSendAdvertise, isPeerSendRequest, isPeerSendResponse, mkPeerSendResponse, PeerFile, isPeerSendReject, isPeerSendReceive, mkPeerSendReceive, isPeerMediaStateMessage } from '@extero/common/dist/src/api'
   import type { Comrade, MediaReference } from "../comrade"
   import type { Media } from "../media"
 
@@ -93,6 +93,8 @@
           mediaType: media.mediaType,
           mediaConnection: call,
           stream: undefined,
+          mutedAudio: false,
+          mutedVideo: false,
         }
         comrade.outboundMedias.push(outboundMediaReference)
 
@@ -110,6 +112,12 @@
           comrade.outboundMedias = comrade.outboundMedias.filter(v=>v.uuid===data.uuid)
           refreshComrades()
         })
+      } else if (isPeerMediaStateMessage(data)) {
+        let m = comrade.inboundMedias.find(v=>v.uuid===data.uuid)
+        if (m) {
+          m.mutedAudio = data.mutedAudio
+          m.mutedVideo = data.mutedVideo
+        }
       } else if (isPeerSendAdvertise(data)) {
         let recvs: PendingReceive[] = []
         // Add advertised files to our receiving file store.
@@ -201,6 +209,8 @@
       mediaType,
       mediaConnection: mc,
       stream: undefined,
+      mutedAudio: false,
+      mutedVideo: false,
     }
     comrade.inboundMedias.push(media)
     mc.on('stream', (stream: MediaStream) => {

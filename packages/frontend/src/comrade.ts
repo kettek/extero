@@ -6,6 +6,8 @@ export interface MediaReference {
   mediaType: MediaType
   mediaConnection: MediaConnection
   stream: MediaStream
+  mutedVideo: boolean
+  mutedAudio: boolean
 }
 
 

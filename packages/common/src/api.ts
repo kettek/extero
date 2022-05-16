@@ -183,6 +183,23 @@ export function mkPeerImageMessage(image: string): PeerImageMessage {
   }
 }
 
+export interface PeerMediaState {
+  type: 'media-state'
+  uuid: string
+  mutedVideo: boolean
+  mutedAudio: boolean
+}
+export function isPeerMediaStateMessage(o: any): o is PeerMediaState {
+  return o.type === 'media-state'
+}
+export function mkPeerMediaStateMessage(uuid: string, mutedVideo: boolean, mutedAudio: boolean): PeerMediaState {
+  return {
+    type: 'media-state',
+    uuid,
+    mutedVideo,
+    mutedAudio,
+  }
+}
 
 // File Send/Receive
 export interface PeerFileInfo {
