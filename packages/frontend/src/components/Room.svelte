@@ -374,13 +374,15 @@
   }
   .chat-message {
     display: flex;
-    align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
     padding: 0 1em;
     margin-bottom: .25em;
   }
   .chat-message-from {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
     font-weight: bold;
   }
   .chat-message-date {
