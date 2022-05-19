@@ -101,10 +101,10 @@
     </aside>
     <aside class='indicator'>
       {#if primaryStream.mutedAudio}
-        <Icon icon='micOff large'></Icon>
+        <Icon icon='micOff' large></Icon>
       {/if}
       {#if primaryStream.mutedVideo}
-        <Icon icon='videoOff large'></Icon>
+        <Icon icon='videoOff' large></Icon>
       {/if}
       {#if secondaryStream}
         {#if secondaryStream.mutedAudio}
