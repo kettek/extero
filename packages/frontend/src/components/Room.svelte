@@ -408,6 +408,12 @@
     max-width: 100%;
     max-height: 15em;
   }
+  .chat-message-content a {
+    color: rgb(96, 96, 255);
+  }
+  .chat-message-content a:visited {
+    color: rgb(96, 96, 96);
+  }
   .comrades {
     padding: 1em;
     background: rgba(32, 32, 32, 0.5);
