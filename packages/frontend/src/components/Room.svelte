@@ -404,6 +404,10 @@
     margin-left: 1em;
     word-break: break-word;
   }
+  .chat-message-content img {
+    max-width: 100%;
+    max-height: 15em;
+  }
   .comrades {
     padding: 1em;
     background: rgba(32, 32, 32, 0.5);
