@@ -95,6 +95,11 @@
         <track kind='captions'>
       </video>
     {/if}
+    {#if primaryStream.mutedAudio && primaryStream.mutedVideo}
+      <aside class='chair'>
+        <img src='/icons/chair.svg' alt='The Red Chair'>
+      </aside>
+    {/if}
     <aside class='controls'>
       <input type='range' orient='vertical' bind:value={comrade.volume} min=0 max=200 step=0.25/>
       <input type='number' bind:value={comrade.volume} min=0 max=200 step=0.25/>
@@ -168,5 +173,18 @@
     width: 20%;
     height: 20%;
     object-fit: contain;
+  }
+  .chair {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    padding: 10%;
+    pointer-events: none;
+  }
+  .chair img {
+    width: 100%;
+    height: 100%;
   }
 </style>
