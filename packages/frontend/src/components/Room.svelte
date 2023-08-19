@@ -215,6 +215,18 @@
     return true
   }
 
+  let currentTimestamp = Date.now()
+  function getComradeConnectionLength(connectedTime: number, fromTime: number): string {
+    let delta = fromTime - connectedTime
+    if (delta < 0) {
+      delta = 0
+    }
+    const hours = ('0' + Math.floor(delta / 3600000)).slice(-2)
+    const minutes = ('0' + Math.floor((delta % 3600000) / 60000)).slice(-2)
+    const seconds = ('0' + Math.floor((delta % 60000) / 1000)).slice(-2)
+    return `${hours}:${minutes}:${seconds}`
+  }
+
   onMount(() => {
     playSound('self_join')
 
@@ -233,7 +245,12 @@
     actions.bind(Object.keys(actionDefinitions), onAction)
     actions.register(actionDefinitions)
 
+    let timestamper = window.setInterval(() => {
+      currentTimestamp = Date.now()
+    }, 1000)
+
     return () => {
+      clearInterval(timestamper)
       playSound('self_leave')
       actions.unregister(actionDefinitions)
       actions.unbind(Object.keys(actionDefinitions), onAction)
@@ -301,6 +318,9 @@
             </div>
             <div class='comrade-chat-name'>
               {comrade.name}
+            </div>
+            <div class='comrade-chat-time'>
+              {getComradeConnectionLength(comrade.connectedTime, currentTimestamp)}
             </div>
           </div>
         {/each}
@@ -424,7 +444,7 @@
   }
   .comrade-chat {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
   .comrade-chat-image {
     width: 2em;
@@ -434,6 +454,19 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+  }
+  .comrade-chat-name {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+  }
+  .comrade-chat-time {
+    color: rgb(128, 128, 128);
+    opacity: 0.5;
+    font-size: 75%;
+    display: flex;
+    align-items: center;
+    font-family: monospace;
   }
   .comrade-chat-self-name {
     display: flex;

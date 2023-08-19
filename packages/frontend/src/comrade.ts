@@ -20,4 +20,5 @@ export interface Comrade {
   volume: number
   color: string
   image?: string
+  connectedTime: number
 }

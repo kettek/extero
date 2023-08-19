@@ -37,6 +37,7 @@
       dataConnection: p,
       volume: 100,
       color: '',
+      connectedTime: Date.now(),
     }
     comrades.push(comrade)
     p.on('open', () => {
