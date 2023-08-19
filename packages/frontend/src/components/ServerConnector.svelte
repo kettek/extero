@@ -86,6 +86,8 @@
           metadata: {
             uuid: media.uuid,
             mediaType: media.mediaType,
+            mutedAudio: media.stream.getAudioTracks().every(v=>v.enabled===false),
+            mutedVideo: media.stream.getVideoTracks().every(v=>v.enabled===false),
           }
         })
 
@@ -201,7 +203,7 @@
     refreshComrades()
   }
   function addComradeMedia(comrade: Comrade, mc: Peer.MediaConnection) {
-    let {uuid, mediaType} = mc.metadata
+    let {uuid, mediaType, mutedAudio, mutedVideo} = mc.metadata
     if (!uuid || !mediaType) {
       throw new Error(`comrade didn't provide the secret codes`)
     }
@@ -210,8 +212,8 @@
       mediaType,
       mediaConnection: mc,
       stream: undefined,
-      mutedAudio: false,
-      mutedVideo: false,
+      mutedAudio,
+      mutedVideo,
     }
     comrade.inboundMedias.push(media)
     mc.on('stream', (stream: MediaStream) => {
