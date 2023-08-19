@@ -169,7 +169,7 @@
     editUsername = false
   }
   function usernameKeyup(e: KeyboardEvent) {
-    if (e.code === 'Enter') {
+    if (e.code === 'Enter' || e.code === 'KPEnter') {
       commitPendingUsername()
     } else if (e.code === 'Escape') {
       cancelEditUsername()
