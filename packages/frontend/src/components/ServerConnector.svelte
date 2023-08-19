@@ -223,7 +223,6 @@
 
   export let websocket: WebSocket
   export let ready: boolean
-  let desiredRoom: string
   export let room: string
   export let roomReady: boolean
   let error: boolean
@@ -231,7 +230,7 @@
   $: {
     if (roomReady && room) {
       websocket?.send(JSON.stringify(
-        mkJoinRoomMessage(desiredRoom)
+        mkJoinRoomMessage(room)
       ))
     }
   }
