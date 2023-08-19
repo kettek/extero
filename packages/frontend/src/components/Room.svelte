@@ -247,7 +247,7 @@
 
     let timestamper = window.setInterval(() => {
       currentTimestamp = Date.now()
-    }, 1000)
+    }, 250)
 
     return () => {
       clearInterval(timestamper)
@@ -463,7 +463,7 @@
   .comrade-chat-time {
     color: rgb(128, 128, 128);
     opacity: 0.5;
-    font-size: 75%;
+    font-size: 80%;
     display: flex;
     align-items: center;
     font-family: monospace;
