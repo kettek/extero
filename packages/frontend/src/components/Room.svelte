@@ -62,7 +62,7 @@
   }
 
   function onChatInputKeyUp(e: KeyboardEvent) {
-    if (e.code === 'Enter') {
+    if (e.code === 'Enter' || e.code === 'KPEnter') {
       actions.trigger('send chat')
     } else if (e.code === 'Escape') {
       actions.trigger('blur chat')
